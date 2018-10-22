@@ -52,4 +52,9 @@ def get_readings(sentence):
 		results.append(word_readings)
 	return results 
 
-print get_readings(u"Kyseisen vaatimustenmukaisuutta arvioivien elinten toimintaa voidaan parantaa huomattavasti.")
+if __name__ == '__main__':
+	disambiguations = __disambiguate(u"alan laulamaan")
+	for disambiguation in disambiguations:
+		possible_words = disambiguation[1]
+		for possible_word in possible_words:
+			print possible_word.morphology

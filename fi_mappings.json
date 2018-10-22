@@ -18,7 +18,17 @@
     },  
     "Connegative": {
         "ConNeg": "Yes"
-    }, 
+    },
+    "VerbForm": {
+        "Act": "Fin",
+        "Pss": "Fin",
+        "AgPrc": "Inf",
+        "InfA": "Inf",
+        "InfE": "Inf",
+        "InfMa": "Inf",
+        "PrfPrc": "Part",
+        "PrsPrc": "Part"
+    },
     "Mood": {
         "Cond": "Cnd", 
         "Imprt": "Imp", 
