@@ -1,0 +1,142 @@
+{
+    "Abbr": {
+        "0": "Yes"
+    }, 
+    "AdpType": {
+        "0": "Post", 
+        "1": "Prep"
+    }, 
+    "Case": {
+        "0": "Abe", 
+        "1": "Abl", 
+        "2": "Acc", 
+        "3": "Ade", 
+        "4": "All", 
+        "5": "Com", 
+        "6": "Ela", 
+        "7": "Ess", 
+        "8": "Gen", 
+        "9": "Ill", 
+        "10": "Ine", 
+        "11": "Ins", 
+        "12": "Nom", 
+        "13": "Par", 
+        "14": "Tra"
+    }, 
+    "Clitic": {
+        "0": "Han", 
+        "1": "Han,Ko", 
+        "2": "Han,Pa", 
+        "3": "Ka", 
+        "4": "Kaan", 
+        "5": "Kin", 
+        "6": "Ko", 
+        "7": "Ko,S", 
+        "8": "Pa", 
+        "9": "Pa,S", 
+        "10": "S"
+    }, 
+    "Connegative": {
+        "0": "Yes"
+    }, 
+    "Degree": {
+        "0": "Cmp", 
+        "1": "Pos", 
+        "2": "Sup"
+    }, 
+    "Derivation": {
+        "0": "Inen", 
+        "1": "Inen,Vs", 
+        "2": "Ja", 
+        "3": "Ja,Tar", 
+        "4": "Lainen", 
+        "5": "Lainen,Vs", 
+        "6": "Llinen", 
+        "7": "Llinen,Vs", 
+        "8": "Minen", 
+        "9": "Sti", 
+        "10": "Tar", 
+        "11": "Ton", 
+        "12": "Ton,Vs", 
+        "13": "Ttain", 
+        "14": "U", 
+        "15": "Vs"
+    }, 
+    "Foreign": {
+        "0": "Yes"
+    }, 
+    "InfForm": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Mood": {
+        "0": "Cnd", 
+        "1": "Imp", 
+        "2": "Ind", 
+        "3": "Pot"
+    }, 
+    "NumType": {
+        "0": "Card", 
+        "1": "Ord"
+    }, 
+    "Number": {
+        "0": "Plur", 
+        "1": "Sing"
+    }, 
+    "Number[psor]": {
+        "0": "Plur", 
+        "1": "Sing"
+    }, 
+    "PartForm": {
+        "0": "Agt", 
+        "1": "Neg", 
+        "2": "Past", 
+        "3": "Pres"
+    }, 
+    "Person": {
+        "0": "0", 
+        "1": "1", 
+        "2": "2", 
+        "3": "3"
+    }, 
+    "Person[psor]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Polarity": {
+        "0": "Neg"
+    }, 
+    "PronType": {
+        "0": "Dem", 
+        "1": "Ind", 
+        "2": "Int", 
+        "3": "Prs", 
+        "4": "Rcp", 
+        "5": "Rel"
+    }, 
+    "Reflex": {
+        "0": "Yes"
+    }, 
+    "Style": {
+        "0": "Arch", 
+        "1": "Coll"
+    }, 
+    "Tense": {
+        "0": "Past", 
+        "1": "Pres"
+    }, 
+    "Typo": {
+        "0": "Yes"
+    }, 
+    "VerbForm": {
+        "0": "Fin", 
+        "1": "Inf", 
+        "2": "Part"
+    }, 
+    "Voice": {
+        "0": "Act", 
+        "1": "Pass"
+    }
+}

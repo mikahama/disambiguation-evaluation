@@ -2,6 +2,7 @@ import codecs
 from uralicNLP.ud_tools import UD_collection
 import os
 import numpy as np
+import json
 
 def cache_wrapper(func):
 	def call(*args, **kwargs):
@@ -10,11 +11,14 @@ def cache_wrapper(func):
 		if not overwrite and os.path.exists(cache):
 			return np.load(cache)["data"]
 		else:
-			print("doing ..", cache)
 			out = func(*args, **kwargs)
 			np.savez(cache, data=out)
 			return out
 	return call
+
+def dict_to_json(filepath, d):
+	with open(filepath, 'w') as fp:
+		json.dump(d, fp, indent=4, sort_keys=True)
 
 # will have to write a different parser for different conllu files probably
 def parse_feature(s):
@@ -48,4 +52,9 @@ if __name__ == "__main__":
 	kmz = "/Users/Jeff/SFU/PhD/NLP/Universal Dependencies 2.2/ud-treebanks-v2.2/UD_Komi_Zyrian-IKDP/kpv_ikdp-ud-test.conllu"
 	kmz_lattice = "/Users/Jeff/SFU/PhD/NLP/Universal Dependencies 2.2/ud-treebanks-v2.2/UD_Komi_Zyrian-Lattice/kpv_lattice-ud-test.conllu"
 
-	print( UD_tree_to_mapping(fin, cache="test.npz") )
+	fw_map, bw_map = UD_tree_to_mapping(fin, cache="test.npz")
+	dict_to_json("fw_map.json", fw_map)
+	dict_to_json("bw_map.json", bw_map)
+
+
+#
