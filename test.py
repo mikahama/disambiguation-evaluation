@@ -40,7 +40,7 @@ def UD_tree_to_mapping(input_filepath, **kwargs):
 					_map[type] += [value]
 
 	_map = {k:np.unique(v) for k,v in _map.items()}
-	fw_map = {k:{i:x for i,x in enumerate(v)} for k,v in _map.items()}
+	fw_map = {k:{x:i for i,x in enumerate(v)} for k,v in _map.items()}
 	bw_map = {k:{i:x for i,x in enumerate(v)} for k,v in _map.items()}
 	return (fw_map, bw_map)
 
