@@ -1,8 +1,11 @@
 #encoding: utf-8
 from uralicNLP.cg3 import Cg3
 from nltk.tokenize import word_tokenize
+from mikatools import *
 
-order = [pos, case, number, person, tense, conneg, voice]
+order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
+mappings = json_load("fi_mappings.json")
+
 
 def __disambiguate(sentence):
 	if type(sentence) == unicode:
@@ -14,7 +17,28 @@ def __disambiguate(sentence):
 def __parse_morphology(morphology):
 	#CC,CS -> C
 	#Pr, Po -> Adp
-	pass
+	reading = {}
+	poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct"]
+	for pos in poses:
+		if pos in morphology:
+			if pos == "CS" or pos == "CC":
+				reading["pos"] = "C"
+				break
+			elif pos == "Pr" or pos == "Po":
+				reading["pos"] = "Adp"
+				break
+			else:
+				reading["pos"] = pos
+				break
+	if "pos" not in reading:
+		reading["pos"] = ""
+	for mapping, map_dict in mappings.iteritems():
+		for item in map_dict:
+			if item in morphology:
+				reading[mapping] = map_dict[item]
+	return reading
+
+
 
 def get_readings(sentence):
 	disambiguations = __disambiguate(sentence)
@@ -28,9 +52,4 @@ def get_readings(sentence):
 		results.append(word_readings)
 	return results 
 
-disambiguations = __disambiguate(u"paitsi poliittisesti huolestuttavaa myös tieteellisesti pätemätöntä")
-
-for disambiguation in disambiguations:
-	possible_words = disambiguation[1]
-	for possible_word in possible_words:
-		print possible_word.lemma, possible_word.morphology
+print get_readings(u"Kyseisen vaatimustenmukaisuutta arvioivien elinten toimintaa voidaan parantaa huomattavasti.")

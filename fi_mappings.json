@@ -1,0 +1,54 @@
+{
+    "Case": {
+        "Abe": "Abe", 
+        "Abl": "Abl", 
+        "Acc": "Acc", 
+        "Ade": "Ade", 
+       "All": "All", 
+       "Com": "Com", 
+       "Ela": "Ela", 
+       "Ess": "Ess", 
+       "Gen": "Gen", 
+       "Ill": "Ill", 
+        "Ine": "Ine", 
+        "Ins": "Ins", 
+        "Nom": "Nom", 
+        "Par": "Par", 
+        "Tra": "Tra"
+    },  
+    "Connegative": {
+        "ConNeg": "Yes"
+    }, 
+    "Mood": {
+        "Cond": "Cnd", 
+        "Imprt": "Imp", 
+        "Ind": "Ind", 
+        "Pot": "Pot"
+    },  
+    "Number": {
+        "Pl": "Plur", 
+        "Sg": "Sing",
+        "Sg1": "Sing",
+        "Sg2": "Sing",
+        "Sg3": "Sing",
+        "Pl1": "Plur",
+        "Pl2": "Plur",
+        "Pl3": "Plur"
+    }, 
+    "Person": {
+        "Sg1": "1",
+        "Sg2": "2",
+        "Sg3": "3",
+        "Pl1": "1",
+        "Pl2": "2",
+        "Pl3": "3"
+    }, 
+    "Tense": {
+        "Prt": "Past", 
+        "Prs": "Pres"
+    }, 
+    "Voice": {
+        "Act": "Act", 
+        "Pss": "Pass"
+    }
+}
