@@ -1,142 +1,142 @@
 {
     "Abbr": {
-        "0": "Yes"
+        "Yes": 0
     }, 
     "AdpType": {
-        "0": "Post", 
-        "1": "Prep"
+        "Post": 0, 
+        "Prep": 1
     }, 
     "Case": {
-        "0": "Abe", 
-        "1": "Abl", 
-        "2": "Acc", 
-        "3": "Ade", 
-        "4": "All", 
-        "5": "Com", 
-        "6": "Ela", 
-        "7": "Ess", 
-        "8": "Gen", 
-        "9": "Ill", 
-        "10": "Ine", 
-        "11": "Ins", 
-        "12": "Nom", 
-        "13": "Par", 
-        "14": "Tra"
+        "Abe": 0, 
+        "Abl": 1, 
+        "Acc": 2, 
+        "Ade": 3, 
+        "All": 4, 
+        "Com": 5, 
+        "Ela": 6, 
+        "Ess": 7, 
+        "Gen": 8, 
+        "Ill": 9, 
+        "Ine": 10, 
+        "Ins": 11, 
+        "Nom": 12, 
+        "Par": 13, 
+        "Tra": 14
     }, 
     "Clitic": {
-        "0": "Han", 
-        "1": "Han,Ko", 
-        "2": "Han,Pa", 
-        "3": "Ka", 
-        "4": "Kaan", 
-        "5": "Kin", 
-        "6": "Ko", 
-        "7": "Ko,S", 
-        "8": "Pa", 
-        "9": "Pa,S", 
-        "10": "S"
+        "Han": 0, 
+        "Han,Ko": 1, 
+        "Han,Pa": 2, 
+        "Ka": 3, 
+        "Kaan": 4, 
+        "Kin": 5, 
+        "Ko": 6, 
+        "Ko,S": 7, 
+        "Pa": 8, 
+        "Pa,S": 9, 
+        "S": 10
     }, 
     "Connegative": {
-        "0": "Yes"
+        "Yes": 0
     }, 
     "Degree": {
-        "0": "Cmp", 
-        "1": "Pos", 
-        "2": "Sup"
+        "Cmp": 0, 
+        "Pos": 1, 
+        "Sup": 2
     }, 
     "Derivation": {
-        "0": "Inen", 
-        "1": "Inen,Vs", 
-        "2": "Ja", 
-        "3": "Ja,Tar", 
-        "4": "Lainen", 
-        "5": "Lainen,Vs", 
-        "6": "Llinen", 
-        "7": "Llinen,Vs", 
-        "8": "Minen", 
-        "9": "Sti", 
-        "10": "Tar", 
-        "11": "Ton", 
-        "12": "Ton,Vs", 
-        "13": "Ttain", 
-        "14": "U", 
-        "15": "Vs"
+        "Inen": 0, 
+        "Inen,Vs": 1, 
+        "Ja": 2, 
+        "Ja,Tar": 3, 
+        "Lainen": 4, 
+        "Lainen,Vs": 5, 
+        "Llinen": 6, 
+        "Llinen,Vs": 7, 
+        "Minen": 8, 
+        "Sti": 9, 
+        "Tar": 10, 
+        "Ton": 11, 
+        "Ton,Vs": 12, 
+        "Ttain": 13, 
+        "U": 14, 
+        "Vs": 15
     }, 
     "Foreign": {
-        "0": "Yes"
+        "Yes": 0
     }, 
     "InfForm": {
-        "0": "1", 
-        "1": "2", 
-        "2": "3"
+        "1": 0, 
+        "2": 1, 
+        "3": 2
     }, 
     "Mood": {
-        "0": "Cnd", 
-        "1": "Imp", 
-        "2": "Ind", 
-        "3": "Pot"
+        "Cnd": 0, 
+        "Imp": 1, 
+        "Ind": 2, 
+        "Pot": 3
     }, 
     "NumType": {
-        "0": "Card", 
-        "1": "Ord"
+        "Card": 0, 
+        "Ord": 1
     }, 
     "Number": {
-        "0": "Plur", 
-        "1": "Sing"
+        "Plur": 0, 
+        "Sing": 1
     }, 
     "Number[psor]": {
-        "0": "Plur", 
-        "1": "Sing"
+        "Plur": 0, 
+        "Sing": 1
     }, 
     "PartForm": {
-        "0": "Agt", 
-        "1": "Neg", 
-        "2": "Past", 
-        "3": "Pres"
+        "Agt": 0, 
+        "Neg": 1, 
+        "Past": 2, 
+        "Pres": 3
     }, 
     "Person": {
-        "0": "0", 
-        "1": "1", 
-        "2": "2", 
-        "3": "3"
+        "0": 0, 
+        "1": 1, 
+        "2": 2, 
+        "3": 3
     }, 
     "Person[psor]": {
-        "0": "1", 
-        "1": "2", 
-        "2": "3"
+        "1": 0, 
+        "2": 1, 
+        "3": 2
     }, 
     "Polarity": {
-        "0": "Neg"
+        "Neg": 0
     }, 
     "PronType": {
-        "0": "Dem", 
-        "1": "Ind", 
-        "2": "Int", 
-        "3": "Prs", 
-        "4": "Rcp", 
-        "5": "Rel"
+        "Dem": 0, 
+        "Ind": 1, 
+        "Int": 2, 
+        "Prs": 3, 
+        "Rcp": 4, 
+        "Rel": 5
     }, 
     "Reflex": {
-        "0": "Yes"
+        "Yes": 0
     }, 
     "Style": {
-        "0": "Arch", 
-        "1": "Coll"
+        "Arch": 0, 
+        "Coll": 1
     }, 
     "Tense": {
-        "0": "Past", 
-        "1": "Pres"
+        "Past": 0, 
+        "Pres": 1
     }, 
     "Typo": {
-        "0": "Yes"
+        "Yes": 0
     }, 
     "VerbForm": {
-        "0": "Fin", 
-        "1": "Inf", 
-        "2": "Part"
+        "Fin": 0, 
+        "Inf": 1, 
+        "Part": 2
     }, 
     "Voice": {
-        "0": "Act", 
-        "1": "Pass"
+        "Act": 0, 
+        "Pass": 1
     }
 }
