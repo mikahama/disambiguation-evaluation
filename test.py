@@ -142,14 +142,14 @@ if __name__ == "__main__":
 	dict_to_json("bw_map.json", bw_map)
 
 	_keys = fw_map.keys() # limit to just the keys we want though
-	_partial_keys = ["Case", "Number", "Number[psor]", "Person", "Person[psor]", "Polarity", "Tense", "Voice"]
+	_partial_keys = ["Case", "Number", "Person", "Polarity", "Tense", "Voice"]
 
 	valid_transitions = learn_from_UD_tree(fin, encode_func=ENCODE_FUNC)
 
 	final_results = []
-	final_lens = []
 	ud = UD_collection(codecs.open(fin, encoding="utf-8"))
-	for sentence in tqdm(ud.sentences):
+
+	for sentence in ud.sentences:
 		tmp = sentence.find()
 		tmp.sort()
 		input = [node.form.encode('utf-8') for node in tmp]
@@ -162,12 +162,6 @@ if __name__ == "__main__":
 			partial_encoded_readings += [[partial_encode(_,_["pos"]) for _ in word]]
 
 		if np.max([len(_) for _ in encoded_readings]) > 1 and len(encoded_readings) > 1 and check_for_answer(encoded_readings, target):
-
-			tmp = partial_encoded_readings
-			print "word 0: {}".format(tmp[0])
-			for i,(cur,next) in enumerate(zip(tmp,tmp[1:])):
-				tran_exist = [1 if operator.add(*x) in valid_transitions else 0 for x in itertools.product(cur,next)]
-				print "word {}: {} {}".format(i+1, next, tran_exist)
 
 			relations = []
 			"""
@@ -182,7 +176,7 @@ if __name__ == "__main__":
 						pass
 			"""
 
-			scores = np.asarray([SCORE_FUNC(x,relations) for x in tqdm(itertools.product(*partial_encoded_readings))])
+			scores = np.asarray([SCORE_FUNC(x,relations) for x in itertools.product(*partial_encoded_readings)])
 			choices = list(itertools.product(*encoded_readings))
 			best_idx = np.where(np.max(scores) == scores)[0]
 
@@ -192,17 +186,33 @@ if __name__ == "__main__":
 			assert np.product([len(_) for _ in encoded_readings]) == len(list(itertools.product(*encoded_readings)))
 			assert np.max([len(_) for _ in encoded_readings]) > 1
 
-			match = False
-			for i in best_idx:
-				if target == list(choices[i]):
-					match = True
-					break
+			# only include if we have made some distinction
+			if len(np.unique(scores)) > 1:
 
-			final_results += [match]
-			final_lens += [len(scores)]
+				match = False
+				for i in best_idx:
+					if target == list(choices[i]):
+						match = True
+						break
 
-			print np.mean(np.asarray(final_results)), scores
+				correct_idx = 0
+				for i in range(len(choices)):
+					if target == list(choices[i]):
+						correct_idx = i
+						break
 
-	print np.mean(np.asarray(final_results))
+				final_results += [match]
+
+				# print some info to show what is happening
+				print "SENTENCE : {}".format(" ".join(input))
+
+				tmp = partial_encoded_readings
+				print "word 0: {}".format(tmp[0])
+				for i,(cur,next) in enumerate(zip(tmp,tmp[1:])):
+					tran_exist = [1 if operator.add(*x) in valid_transitions else 0 for x in itertools.product(cur,next)]
+					print "word {}: {} {}".format(i+1, next, tran_exist)
+
+				print "{} : ACC {} SCORES {} CORRECT {} CORRECT_IDX {}\n\n".format(
+					len(final_results), np.mean(np.asarray(final_results)), scores, match, correct_idx)
 
 #
