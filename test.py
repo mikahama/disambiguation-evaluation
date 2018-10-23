@@ -134,7 +134,7 @@ if __name__ == "__main__":
 		"ud/fi-ud-train.conllu",
 		"ud/fi-ud-test.conllu",
 		"ud/kpv_lattice-ud-test.conllu",
-		#"ud/myv-ud.conllu",
+		"ud/myv-ud.conllu",
 		"ud/sme_giella-ud-train.conllu",
 		"ud/sme_giella-ud-test.conllu",
 	]
@@ -151,6 +151,8 @@ if __name__ == "__main__":
 	dict_to_json("fw_master_map.json", fw_map)
 	dict_to_json("bw_master_map.json", bw_map)
 
+	exit()
+
 	_keys = fw_map.keys() # limit to just the keys we want though
 
 	VALID = {}
@@ -162,6 +164,7 @@ if __name__ == "__main__":
 
 	# test by looking
 	"""
+	SCORE_FUNC = bigram_bool_score
 	for sentence in tqdm(ud.sentences):
 		all_readings = __give_all_possibilities(sentence, lang=LANG)
 		all_encoded = [[partial_encode(_,_["pos"]) for _ in word] for word in all_readings]
@@ -170,14 +173,12 @@ if __name__ == "__main__":
 		tmp.sort()
 		target = [node_to_rep(node,encode_func=ENCODE_FUNC) for node in tmp]
 
-		wrong_scores = []
+		score_to_reading_map = {}
+		score_to_reading_map[SCORE_FUNC(target)] = tmp.
 		for reading in itertools.product(*all_encoded):
 			if not reading == target:
 				wrong_scores += [SCORE_FUNC(reading,[])]
-
 	"""
-
-
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde
