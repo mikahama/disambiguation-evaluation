@@ -53,23 +53,12 @@ def get_readings(sentence):
 		results.append(word_readings)
 	return results
 
-#print get_readings(u"Kyseisen vaatimustenmukaisuutta arvioivien elinten toimintaa voidaan parantaa huomattavasti.")
 
-<<<<<<< HEAD
-
-
-if __name__ == '__main__':
-	s = u"Taitojen kehittyminen näytetään selkeästi yhdestä kymmeneen, ja esim. kitaransoittotaidon kehittyessä harjoittelu kuulostaa aina paremmalta, alussa se on vain rämpytystä, mutta taitojen kehittyessä soittoa kuuntelee mielellään"
-	disambiguations = __disambiguate(s)
-=======
 if __name__ == '__main__':
 	disambiguations = __disambiguate(u"alan laulamaan")
->>>>>>> 52651aebd13ca199d5bebd76818a4fec5f9c3ec8
 	for disambiguation in disambiguations:
 		possible_words = disambiguation[1]
 		for possible_word in possible_words:
 			print possible_word.morphology
-<<<<<<< HEAD
 	print get_readings(s)
-=======
->>>>>>> 52651aebd13ca199d5bebd76818a4fec5f9c3ec8
+
