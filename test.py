@@ -55,16 +55,19 @@ def UD_tree_to_mapping(input_filepath, **kwargs):
 	return (fw_map, bw_map)
 
 def encode(d, pos):
+	assert type(pos) == unicode
 	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _keys])
 
 def partial_encode(d, pos):
+	assert type(pos) == unicode
 	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _partial_keys])
 
 def node_to_rep(node, encode_func=encode):
 	feats = parse_feature_to_dict(node.feats)
 	return encode_func(feats, node.xpostag)
 
-def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False, mode="bigram"):
+@cache_wrapper
+def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False, mode="bigram", **kwargs):
 	D = {}
 	ud = UD_collection(codecs.open(input_filepath, encoding="utf-8"))
 	total_trans = 0
@@ -158,17 +161,17 @@ if __name__ == "__main__":
 
 	ENCODE_FUNC = partial_encode
 	SCORE_FUNC = comb_bool_score
-	LEARN_MODE = "comb23"
+	LEARN_MODE = "comb"
 
 	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test.npz")
 	dict_to_json("fw_map.json", fw_map)
 	dict_to_json("bw_map.json", bw_map)
 
 	_keys = fw_map.keys() # limit to just the keys we want though
-	
+
 
 	valid_transitions = learn_from_UD_tree(
-		UD_PATH, encode_func=ENCODE_FUNC, mode=LEARN_MODE)
+		UD_PATH, encode_func=ENCODE_FUNC, mode=LEARN_MODE, cache="valid_transitions_{}_{}.npz".format(ENCODE_FUNC.__name__, LEARN_MODE))
 
 	exit()
 
