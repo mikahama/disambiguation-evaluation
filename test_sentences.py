@@ -4,7 +4,7 @@ from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
 #from mikatools import *
-from common import parse_feature_to_dict, _partial_keys
+from common import *
 import random
 import codecs
 
@@ -51,11 +51,12 @@ def __parse_morphology(morphology):
 def __parse_fst_morphologies(morphology_list):
 	output = []
 	for morphology in morphology_list:
-		m = morphology[0].split("+")[1:]
+		m = morphology[0].replace("@@","+").replace("@","+")
+		m = m.split("+")[1:]
 		output.append(__parse_morphology(m))
 	return output
 
-def __change_ud_morphology(sentence, change_x_times):
+def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 	sent = []
 	random.seed()
 	nodes = sentence.find()
@@ -70,7 +71,7 @@ def __change_ud_morphology(sentence, change_x_times):
 		morphology = parse_feature_to_dict(node.feats)
 		morphology["pos"] = node.xpostag
 		if i in replace:
-			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), "fin"))
+			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), lang))
 			was_changed = False
 			for replacement in replacements:
 				for k in _partial_keys:
@@ -86,12 +87,12 @@ def __change_ud_morphology(sentence, change_x_times):
 		sent.append(morphology)
 	return sent
 
-def __give_all_possibilities(ud_sentence):
+def __give_all_possibilities(ud_sentence, lang="fin"):
 	nodes = ud_sentence.find()
 	nodes.sort()
 	sent = []
 	for node in nodes:
-		fst_output = uralicApi.analyze(node.form.encode('utf-8'), "fin")
+		fst_output = uralicApi.analyze(node.form.encode('utf-8'), lang)
 		forms = __parse_fst_morphologies(fst_output)
 		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
 	return sent
@@ -131,5 +132,8 @@ if __name__ == '__main__':
 			print possible_word.morphology
 	print get_readings(s)
 	"""
-	produce_tests()
+	UD_PATH = "ud/kpv_lattice-ud-test.conllu"
+	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test_kpv.npz")
+	#produce_tests()
+	dict_to_json("bw_map_kpv.json", bw_map)
 

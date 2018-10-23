@@ -1,0 +1,81 @@
+{
+    "Case": {
+        "0": "Abl", 
+        "1": "Acc", 
+        "2": "Apr", 
+        "3": "Com", 
+        "4": "Dat", 
+        "5": "Egr", 
+        "6": "Ill", 
+        "7": "Ine", 
+        "8": "Ins", 
+        "9": "Nom", 
+        "10": "Prl", 
+        "11": "Ter", 
+        "12": "Tra"
+    }, 
+    "Connegative": {
+        "0": "Yes"
+    }, 
+    "Degree": {
+        "0": "Cmp"
+    }, 
+    "Derivation": {
+        "0": "Ig", 
+        "1": "Igmoz", 
+        "2": "Omon", 
+        "3": "Tog"
+    }, 
+    "Evident": {
+        "0": "Nfh"
+    }, 
+    "Mood": {
+        "0": "Ind"
+    }, 
+    "NumType": {
+        "0": "Card", 
+        "1": "Card,Ord", 
+        "2": "Ord"
+    }, 
+    "Number": {
+        "0": "Plur", 
+        "1": "Sing"
+    }, 
+    "Number[psor]": {
+        "0": "Plur", 
+        "1": "Sing"
+    }, 
+    "PartForm": {
+        "0": "Pres"
+    }, 
+    "Person": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Person[psor]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Polarity": {
+        "0": "Neg"
+    }, 
+    "PronType": {
+        "0": "Dem", 
+        "1": "Prs"
+    }, 
+    "Tense": {
+        "0": "Past", 
+        "1": "Pres"
+    }, 
+    "VerbForm": {
+        "0": "Conv", 
+        "1": "Fin", 
+        "2": "Inf", 
+        "3": "Part"
+    }, 
+    "Voice": {
+        "0": "Act"
+    }
+}
