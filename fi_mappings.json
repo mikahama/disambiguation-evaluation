@@ -1,20 +1,25 @@
 {
     "Case": {
         "Abe": "Abe", 
-        "Abl": "Abl", 
+        "Abl": "Abl",
+        "Apr":"Apr",
         "Acc": "Acc", 
         "Ade": "Ade", 
         "All": "All", 
         "Com": "Com", 
-        "Ela": "Ela", 
+        "Ela": "Ela",
+        "Dat":"Dat",
+        "Egr":"Egr",
         "Ess": "Ess", 
         "Gen": "Gen", 
         "Ill": "Ill", 
         "Ine": "Ine", 
         "Ins": "Ins", 
         "Nom": "Nom", 
-        "Par": "Par", 
-        "Tra": "Tra"
+        "Par": "Par",
+        "Prl":"Prl",
+        "Tra": "Tra",
+        "Ter":"Ter"
     },  
     "Connegative": {
         "ConNeg": "Yes"
@@ -27,7 +32,8 @@
         "InfE": "Inf",
         "InfMa": "Inf",
         "PrfPrc": "Part",
-        "PrsPrc": "Part"
+        "PrsPrc": "Part",
+        "U.CONJ-INF.NO": "Fin"
     },
     "Mood": {
         "Cond": "Cnd", 
