@@ -7,7 +7,8 @@ import json
 import itertools
 from tqdm import tqdm
 import operator
-from test_sentences import get_readings, __change_ud_morphology
+from test_sentences import get_readings, __change_ud_morphology, __give_all_possibilities
+from common import _partial_keys
 from common import *
 
 def increment_dict(d,k):
@@ -15,11 +16,11 @@ def increment_dict(d,k):
 
 def encode(d, pos):
 	assert type(pos) == unicode
-	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _keys])
+	return (pos,) + tuple([fw_map[k].get(d[k],-1) if k in d else -1 for k in _keys])
 
 def partial_encode(d, pos):
 	assert type(pos) == unicode
-	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _partial_keys])
+	return (pos,) + tuple([fw_map[k].get(d[k],-1)  if k in d else -1 for k in _partial_keys])
 
 def node_to_rep(node, encode_func=encode):
 	feats = parse_feature_to_dict(node.feats)
@@ -125,16 +126,16 @@ all_case_agree_combine = lambda a,b : tuple([i == j for i,j in zip(a,b)])
 
 if __name__ == "__main__":
 
-	#UD_PATH = "ud/fi-ud-train.conllu"
-	UD_PATH = "ud"
+	FIN_UD_PATH = "ud/fi-ud-train.conllu"
+	UD_PATH = "ud/kpv_lattice-ud-test.conllu"
 	ENCODE_FUNC = partial_encode
 	COMBINE_FUNC = default_combine
 	SCORE_FUNC = comb_bool_score
 	LEARN_MODE = "dependencies"
 
-	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test.npz")
-	dict_to_json("fw_map.json", fw_map)
-	dict_to_json("bw_map.json", bw_map)
+	fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_kpv.npz")
+	#dict_to_json("fw_map_kpv.json", fw_map)
+	#dict_to_json("bw_map_kpv.json", bw_map)
 
 	_keys = fw_map.keys() # limit to just the keys we want though
 
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 		# test that the correct reading gets the highest score
 		results = []
 		for sentence in tqdm(ud.sentences):
-			all_readings = __give_all_possibilities(sentence)
+			all_readings = __give_all_possibilities(sentence, lang="kpv")
 			all_encoded = [[partial_encode(_,_["pos"]) for _ in word] for word in all_readings]
 
 			tmp = sentence.find()
