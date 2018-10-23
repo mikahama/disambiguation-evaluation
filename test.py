@@ -25,6 +25,9 @@ def dict_to_json(filepath, d):
 	with open(filepath, 'w') as fp:
 		json.dump(d, fp, indent=4, sort_keys=True)
 
+def increment_dict(d,k):
+	d[k] = d.get(k,0) + 1
+
 # will have to write a different parser for different conllu files probably
 def parse_feature(s):
 	if s == "_":
@@ -70,8 +73,10 @@ def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False
 	total_trans = 0
 	token_dict = {}
 
-	if mode == "dependencies"
-		for sentence in ud.sentences:
+	print("training from UD tree ...")
+
+	if mode == "dependencies":
+		for sentence in tqdm(ud.sentences):
 			for node in sentence.find():
 				for child in node.children:
 					parent_rep = node_to_rep(node,encode_func=encode_func)
@@ -81,28 +86,45 @@ def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False
 					token_dict[parent_rep] = True
 					token_dict[child_rep] = True
 
-					total_trans += 1
-					D[tran_rep] = D.get(tran_rep, 0) + 1
+					increment_dict(D, tran_rep)
 
 					if include_reverse:
 						rtran_rep = child_rep + parent_rep
-						D[rtran_rep] = D.get(rtran_rep, 0) + 1
+						increment_dict(D, rtran_rep)
+
+					total_trans += 1
 
 	elif mode == "bigram":
-		for sentence in ud.sentences:
+		for sentence in tqdm(ud.sentences):
 			tmp = sentence.find()
 			tmp.sort()
 			for a,b in zip(tmp,tmp[1:]):
 				arep = node_to_rep(a,encode_func=encode_func)
 				brep = node_to_rep(b,encode_func=encode_func)
-				D[arep + brep] = D.get(arep + brep, 0) + 1
+				increment_dict(D, arep + brep)
+				token_dict[arep + brep] = True
+				total_trans += 1
 	elif mode == "comb":
-		for sentence in ud.sentences:
-			tmp = sentence.find()
-			for a,b in itertools.combinations(np.arange(len(tmp)), 2):
-				arep = node_to_rep(tmp[a],encode_func=encode_func)
-				brep = node_to_rep(tmp[b],encode_func=encode_func)
-				D[arep + brep] = D.get(arep + brep, 0) + 1
+		for sentence in tqdm(ud.sentences):
+			reps = [node_to_rep(node, encode_func=encode_func) for node in sentence.find()]
+			for a,b in itertools.product(*([range(len(reps))] * 2)):
+				increment_dict(D, reps[a] + reps[b])
+				token_dict[reps[a] + reps[b]] = True
+				total_trans += 1
+	elif mode == "comb23":
+		for sentence in tqdm(ud.sentences):
+			reps = [node_to_rep(node, encode_func=encode_func) for node in sentence.find()]
+			for a,b in itertools.product(*([range(len(reps))] * 2)):
+				increment_dict(D, reps[a] + reps[b])
+				token_dict[reps[a]] = True
+				token_dict[reps[b]] = True
+				total_trans += 1
+			for a,b,c in itertools.product(*([range(len(reps))] * 3)):
+				increment_dict(D, reps[a] + reps[b] + reps[c])
+				token_dict[reps[a]] = True
+				token_dict[reps[b]] = True
+				token_dict[reps[c]] = True
+				total_trans += 1
 
 	print "total trans : {} unique trans : {} unique tokens {} -> {}".format(total_trans, len(D), len(token_dict), len(token_dict)**2)
 
@@ -139,7 +161,7 @@ if __name__ == "__main__":
 
 	ENCODE_FUNC = partial_encode
 	SCORE_FUNC = comb_bool_score
-	LEARN_MODE = "dependencies"
+	LEARN_MODE = "comb23"
 
 	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test.npz")
 	dict_to_json("fw_map.json", fw_map)
@@ -150,6 +172,8 @@ if __name__ == "__main__":
 
 	valid_transitions = learn_from_UD_tree(
 		UD_PATH, encode_func=ENCODE_FUNC, mode=LEARN_MODE)
+
+	exit()
 
 	final_results = []
 	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
