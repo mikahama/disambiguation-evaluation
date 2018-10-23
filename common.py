@@ -41,6 +41,7 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 
 	_map = {}
 	for input_filepath in input_filepaths:
+		print(input_filepath)
 		ud = UD_collection(codecs.open(input_filepath, encoding="utf-8"))
 		for sentence in ud.sentences:
 			for node in sentence.find(): # for each node get all children

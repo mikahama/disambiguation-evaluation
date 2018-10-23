@@ -6,6 +6,9 @@
         "0": "Post", 
         "1": "Prep"
     }, 
+    "Aspect": {
+        "0": "Perf"
+    }, 
     "Case": {
         "0": "Abe", 
         "1": "Abl", 
@@ -22,24 +25,26 @@
         "12": "Ill", 
         "13": "Ine", 
         "14": "Ins", 
-        "15": "Nom", 
-        "16": "Par", 
-        "17": "Prl", 
-        "18": "Ter", 
-        "19": "Tra"
+        "15": "Loc", 
+        "16": "Nom", 
+        "17": "Par", 
+        "18": "Prl", 
+        "19": "Ter", 
+        "20": "Tra"
     }, 
     "Clitic": {
         "0": "Han", 
-        "1": "Han,Ko", 
-        "2": "Han,Pa", 
-        "3": "Ka", 
-        "4": "Kaan", 
-        "5": "Kin", 
-        "6": "Ko", 
-        "7": "Ko,S", 
-        "8": "Pa", 
-        "9": "Pa,S", 
-        "10": "S"
+        "1": "Han,Kin", 
+        "2": "Han,Ko", 
+        "3": "Han,Pa", 
+        "4": "Ka", 
+        "5": "Kaan", 
+        "6": "Kin", 
+        "7": "Ko", 
+        "8": "Ko,S", 
+        "9": "Pa", 
+        "10": "Pa,S", 
+        "11": "S"
     }, 
     "Connegative": {
         "0": "Yes"
@@ -94,12 +99,14 @@
         "2": "Ord"
     }, 
     "Number": {
-        "0": "Plur", 
-        "1": "Sing"
+        "0": "Dual", 
+        "1": "Plur", 
+        "2": "Sing"
     }, 
     "Number[psor]": {
-        "0": "Plur", 
-        "1": "Sing"
+        "0": "Dual", 
+        "1": "Plur", 
+        "2": "Sing"
     }, 
     "PartForm": {
         "0": "Agt", 
@@ -122,12 +129,13 @@
         "0": "Neg"
     }, 
     "PronType": {
-        "0": "Dem", 
-        "1": "Ind", 
-        "2": "Int", 
-        "3": "Prs", 
-        "4": "Rcp", 
-        "5": "Rel"
+        "0": "Coll", 
+        "1": "Dem", 
+        "2": "Ind", 
+        "3": "Int", 
+        "4": "Prs", 
+        "5": "Rcp", 
+        "6": "Rel"
     }, 
     "Reflex": {
         "0": "Yes"
@@ -146,8 +154,10 @@
     "VerbForm": {
         "0": "Conv", 
         "1": "Fin", 
-        "2": "Inf", 
-        "3": "Part"
+        "2": "Ger", 
+        "3": "Inf", 
+        "4": "Part", 
+        "5": "Sup"
     }, 
     "Voice": {
         "0": "Act", 

@@ -6,6 +6,9 @@
         "Post": 0, 
         "Prep": 1
     }, 
+    "Aspect": {
+        "Perf": 0
+    }, 
     "Case": {
         "Abe": 0, 
         "Abl": 1, 
@@ -22,24 +25,26 @@
         "Ill": 12, 
         "Ine": 13, 
         "Ins": 14, 
-        "Nom": 15, 
-        "Par": 16, 
-        "Prl": 17, 
-        "Ter": 18, 
-        "Tra": 19
+        "Loc": 15, 
+        "Nom": 16, 
+        "Par": 17, 
+        "Prl": 18, 
+        "Ter": 19, 
+        "Tra": 20
     }, 
     "Clitic": {
         "Han": 0, 
-        "Han,Ko": 1, 
-        "Han,Pa": 2, 
-        "Ka": 3, 
-        "Kaan": 4, 
-        "Kin": 5, 
-        "Ko": 6, 
-        "Ko,S": 7, 
-        "Pa": 8, 
-        "Pa,S": 9, 
-        "S": 10
+        "Han,Kin": 1, 
+        "Han,Ko": 2, 
+        "Han,Pa": 3, 
+        "Ka": 4, 
+        "Kaan": 5, 
+        "Kin": 6, 
+        "Ko": 7, 
+        "Ko,S": 8, 
+        "Pa": 9, 
+        "Pa,S": 10, 
+        "S": 11
     }, 
     "Connegative": {
         "Yes": 0
@@ -94,12 +99,14 @@
         "Ord": 2
     }, 
     "Number": {
-        "Plur": 0, 
-        "Sing": 1
+        "Dual": 0, 
+        "Plur": 1, 
+        "Sing": 2
     }, 
     "Number[psor]": {
-        "Plur": 0, 
-        "Sing": 1
+        "Dual": 0, 
+        "Plur": 1, 
+        "Sing": 2
     }, 
     "PartForm": {
         "Agt": 0, 
@@ -122,12 +129,13 @@
         "Neg": 0
     }, 
     "PronType": {
-        "Dem": 0, 
-        "Ind": 1, 
-        "Int": 2, 
-        "Prs": 3, 
-        "Rcp": 4, 
-        "Rel": 5
+        "Coll": 0, 
+        "Dem": 1, 
+        "Ind": 2, 
+        "Int": 3, 
+        "Prs": 4, 
+        "Rcp": 5, 
+        "Rel": 6
     }, 
     "Reflex": {
         "Yes": 0
@@ -146,8 +154,10 @@
     "VerbForm": {
         "Conv": 0, 
         "Fin": 1, 
-        "Inf": 2, 
-        "Part": 3
+        "Ger": 2, 
+        "Inf": 3, 
+        "Part": 4, 
+        "Sup": 5
     }, 
     "Voice": {
         "Act": 0, 

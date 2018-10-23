@@ -133,7 +133,14 @@ if __name__ == "__main__":
 	SCORE_FUNC = comb_bool_score
 	LEARN_MODE = "dependencies"
 
-	ALL_UD_PATHS = ["ud/fi-ud-train.conllu", "ud/kpv_lattice-ud-test.conllu"]
+	ALL_UD_PATHS = [
+		"ud/fi-ud-train.conllu",
+		"ud/fi-ud-test.conllu",
+		"ud/kpv_lattice-ud-test.conllu",
+		#"ud/myv-ud.conllu",
+		"ud/sme_giella-ud-train.conllu",
+		"ud/sme_giella-ud-test.conllu",
+	]
 
 	fw_map, bw_map = UD_trees_to_mapping(ALL_UD_PATHS, cache="master_map.npz")
 	dict_to_json("fw_master_map.json", fw_map)
