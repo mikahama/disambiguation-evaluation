@@ -86,6 +86,15 @@ def __change_ud_morphology(sentence, change_x_times):
 		sent.append(morphology)
 	return sent
 
+def __give_all_possibilities(ud_sentence):
+	nodes = ud_sentence.find()
+	nodes.sort()
+	sent = []
+	for node in nodes:
+		fst_output = uralicApi.analyze(node.form.encode('utf-8'), "fin")
+		forms = __parse_fst_morphologies(fst_output)
+		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
+	return sent
 
 
 
@@ -93,8 +102,9 @@ def __change_ud_morphology(sentence, change_x_times):
 
 def produce_tests():
 	ud = UD_collection(codecs.open("ud/fi-ud-train.conllu", encoding="utf-8"))
-	for sentence in ud.sentences:
-		morphs = __change_ud_morphology(sentence, 3)
+	for sentence in ud.sentences[3:]:
+		print unicode(sentence)
+		morphs = __give_all_possibilities(sentence)
 		print morphs
 		quit()
 
