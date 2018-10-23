@@ -33,7 +33,8 @@
         "InfMa": "Inf",
         "PrfPrc": "Part",
         "PrsPrc": "Part",
-        "U.CONJ-INF.NO": "Fin"
+        "U.CONJ-INF.NO": "Fin",
+        "U.CONJ-INF.YES": "Inf"
     },
     "Mood": {
         "Cond": "Cnd", 

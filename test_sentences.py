@@ -132,9 +132,9 @@ if __name__ == '__main__':
 			print possible_word.morphology
 	print get_readings(s)
 	"""
-	UD_PATH = "ud/kpv_lattice-ud-test.conllu"
-	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test_kpv.npz")
+	UD_PATH = "ud/myv-ud.conllu"
+	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test_myv.npz")
 	#produce_tests()
-	dict_to_json("bw_map_kpv.json", bw_map)
-	dict_to_json("fw_map_kpv.json", fw_map)
+	dict_to_json("bw_map_myv.json", bw_map)
+	dict_to_json("fw_map_myv.json", fw_map)
 
