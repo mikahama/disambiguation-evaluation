@@ -11,6 +11,7 @@
         "Dat":"Dat",
         "Egr":"Egr",
         "Ess": "Ess", 
+        "Comp":"Comp",
         "Gen": "Gen", 
         "Ill": "Ill", 
         "Ine": "Ine", 
@@ -19,7 +20,10 @@
         "Par": "Par",
         "Prl":"Prl",
         "Tra": "Tra",
-        "Ter":"Ter"
+        "Ter":"Ter",
+        "Lat":"Lat",
+        "Loc":"Loc",
+        "Temp":"Temp"
     },  
     "Connegative": {
         "ConNeg": "Yes"
@@ -34,7 +38,9 @@
         "PrfPrc": "Part",
         "PrsPrc": "Part",
         "U.CONJ-INF.NO": "Fin",
-        "U.CONJ-INF.YES": "Inf"
+        "U.CONJ-INF.YES": "Inf",
+        "Actio": "Ger",
+        "Sup":"Sup"
     },
     "Mood": {
         "Cond": "Cnd", 
@@ -50,7 +56,13 @@
         "Sg3": "Sing",
         "Pl1": "Plur",
         "Pl2": "Plur",
-        "Pl3": "Plur"
+        "Pl3": "Plur",
+        "SP": "Plur,Sing",
+        "Du":"Dual",
+        "Du1":"Dual",
+        "Du2":"Dual",
+        "Du3":"Dual"
+
     }, 
     "Person": {
         "Sg1": "1",

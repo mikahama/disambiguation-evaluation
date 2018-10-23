@@ -1,0 +1,195 @@
+{
+    "AdpType": {
+        "0": "Post"
+    }, 
+    "AdvType": {
+        "0": "Deg", 
+        "1": "Loc", 
+        "2": "Man", 
+        "3": "Sta", 
+        "4": "Tim"
+    }, 
+    "Animacy": {
+        "0": "Anim", 
+        "1": "Hum"
+    }, 
+    "Aspect": {
+        "0": "Inch"
+    }, 
+    "Case": {
+        "0": "Abe", 
+        "1": "Abl", 
+        "2": "Com", 
+        "3": "Comp", 
+        "4": "Dat", 
+        "5": "Ela", 
+        "6": "Gen", 
+        "7": "Ill", 
+        "8": "Ine", 
+        "9": "Lat", 
+        "10": "Loc", 
+        "11": "Nom", 
+        "12": "Prl", 
+        "13": "Temp", 
+        "14": "Tra"
+    }, 
+    "Clitic": {
+        "0": "Aja", 
+        "1": "Ga", 
+        "2": "Gak", 
+        "3": "Ja", 
+        "4": "Ka"
+    }, 
+    "Connegative": {
+        "0": "Yes"
+    }, 
+    "Definite": {
+        "0": "Def", 
+        "1": "Ind"
+    }, 
+    "Degree": {
+        "0": "Cmp", 
+        "1": "Sup"
+    }, 
+    "Derivation": {
+        "0": "AdvstO", 
+        "1": "DimKE", 
+        "2": "DimNe", 
+        "3": "Dimin", 
+        "4": "GenAttr", 
+        "5": "Ill", 
+        "6": "Ine", 
+        "7": "J", 
+        "8": "Kaj", 
+        "9": "Njems", 
+        "10": "NomAg", 
+        "11": "OkshnOms", 
+        "12": "Oma", 
+        "13": "Omka", 
+        "14": "OvOms", 
+        "15": "Ovt", 
+        "16": "OvtOms", 
+        "17": "Ozj", 
+        "18": "PrcPrt1", 
+        "19": "PronGak", 
+        "20": "Shka", 
+        "21": "VGen", 
+        "22": "VerbYks", 
+        "23": "Voc", 
+        "24": "Y"
+    }, 
+    "Evident": {
+        "0": "Nfh"
+    }, 
+    "Gender": {
+        "0": "Fem", 
+        "1": "Masc"
+    }, 
+    "Mood": {
+        "0": "Cnd", 
+        "1": "CndCnj", 
+        "2": "Cnj", 
+        "3": "Des", 
+        "4": "Imp", 
+        "5": "Ind", 
+        "6": "Opt", 
+        "7": "Proh"
+    }, 
+    "NameType": {
+        "0": "Giv", 
+        "1": "Sur"
+    }, 
+    "NegationType": {
+        "0": "Contrastive"
+    }, 
+    "NumType": {
+        "0": "Card", 
+        "1": "Dist", 
+        "2": "Mult", 
+        "3": "Ord", 
+        "4": "OrdinalSets", 
+        "5": "Sets"
+    }, 
+    "Number": {
+        "0": "Plur", 
+        "1": "Plur,Sing", 
+        "2": "Sing"
+    }, 
+    "Number[obj]": {
+        "0": "Plur", 
+        "1": "Sing"
+    }, 
+    "Number[psor]": {
+        "0": "Plur", 
+        "1": "Sing"
+    }, 
+    "Number[subj]": {
+        "0": "Plur", 
+        "1": "Plur,Sing", 
+        "2": "Sing"
+    }, 
+    "PartType": {
+        "0": "Emp"
+    }, 
+    "Person": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Person[obj]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Person[psor]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Person[subj]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Polarity": {
+        "0": "Neg"
+    }, 
+    "PronType": {
+        "0": "Dem", 
+        "1": "Ind", 
+        "2": "Int", 
+        "3": "Prs", 
+        "4": "Rcp", 
+        "5": "Refl", 
+        "6": "Rel", 
+        "7": "Tot"
+    }, 
+    "Reflex": {
+        "0": "Yes"
+    }, 
+    "Tense": {
+        "0": "Pres", 
+        "1": "Prt1", 
+        "2": "Prt2"
+    }, 
+    "Typo": {
+        "0": "Yes"
+    }, 
+    "Valency": {
+        "0": "1", 
+        "1": "2"
+    }, 
+    "Variant": {
+        "0": "Long", 
+        "1": "Short"
+    }, 
+    "VerbForm": {
+        "0": "Conv", 
+        "1": "Inf", 
+        "2": "Part", 
+        "3": "Vnoun"
+    }, 
+    "VerbType": {
+        "0": "Aux"
+    }
+}
