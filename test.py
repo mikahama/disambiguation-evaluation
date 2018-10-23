@@ -7,7 +7,7 @@ import json
 import itertools
 from tqdm import tqdm
 import operator
-from test_sentences import get_readings
+from test_sentences import get_readings, __change_ud_morphology
 from common import parse_feature_to_dict, _partial_keys
 
 def cache_wrapper(func):
@@ -157,11 +157,10 @@ relation_bool_score = lambda x,r : np.sum([1 if x[a] + x[b] in valid_transitions
 
 if __name__ == "__main__":
 
-	UD_PATH = "/Users/Jeff/SFU/PhD/NLP/Universal Dependencies 2.2/ud-treebanks-v2.2/UD_Finnish-TDT/fi_tdt-ud-train.conllu"
-
+	UD_PATH = "ud/fi-ud-train.conllu"
 	ENCODE_FUNC = partial_encode
 	SCORE_FUNC = comb_bool_score
-	LEARN_MODE = "comb"
+	LEARN_MODE = "dependencies"
 
 	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test.npz")
 	dict_to_json("fw_map.json", fw_map)
@@ -173,10 +172,15 @@ if __name__ == "__main__":
 	valid_transitions = learn_from_UD_tree(
 		UD_PATH, encode_func=ENCODE_FUNC, mode=LEARN_MODE, cache="valid_transitions_{}_{}.npz".format(ENCODE_FUNC.__name__, LEARN_MODE))
 
-	exit()
-
 	final_results = []
 	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
+
+	for sentence in ud.sentences:
+		wrong_reading = __change_ud_morphology(sentence, 1)
+		print( [partial_encode(_,_["pos"]) for _ in wrong_reading] )
+
+		exit()
+
 
 	for sentence in ud.sentences:
 		tmp = sentence.find()
