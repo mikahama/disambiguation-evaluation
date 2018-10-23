@@ -68,7 +68,6 @@ def __change_ud_morphology(sentence, change_x_times):
 	for i in range(len(nodes)):
 		node = nodes[i]
 		morphology = parse_feature_to_dict(node.feats)
-		#print node.feats
 		morphology["pos"] = node.xpostag
 		if i in replace:
 			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), "fin"))
@@ -78,11 +77,12 @@ def __change_ud_morphology(sentence, change_x_times):
 					if k in replacement:
 						if (k in morphology and replacement[k] != morphology[k]) or k not in morphology:
 							morphology = replacement
+							was_changed = True
 							break
 				if was_changed:
 					break
 			if not was_changed:
-				morphology["pos"] = random.choice(poses)
+				morphology["pos"] = unicode(random.choice(poses))
 		sent.append(morphology)
 	return sent
 
@@ -94,7 +94,7 @@ def __change_ud_morphology(sentence, change_x_times):
 def produce_tests():
 	ud = UD_collection(codecs.open("ud/fi-ud-train.conllu", encoding="utf-8"))
 	for sentence in ud.sentences:
-		morphs = __change_ud_morphology(sentence, 1)
+		morphs = __change_ud_morphology(sentence, 3)
 		print morphs
 		quit()
 
