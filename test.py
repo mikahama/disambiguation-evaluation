@@ -10,10 +10,6 @@ import operator
 from test_sentences import get_readings
 from common import parse_feature_to_dict
 
-# TODO : a function that returns all possible readings
-# TODO : measure how often our function finds a better solution than the model in cases where the model does not return the true solution
-# TODO : measure how often our function finds the best solution (eliminating) at least one possibility
-
 def cache_wrapper(func):
 	def call(*args, **kwargs):
 		cache = kwargs.get("cache", "")
@@ -56,22 +52,22 @@ def UD_tree_to_mapping(input_filepath, **kwargs):
 	return (fw_map, bw_map)
 
 def encode(d, pos):
-	return (pos,) + tuple([fw_map[k][d[k]] if k in d else 0 for k in _keys])
+	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _keys])
 
 def partial_encode(d, pos):
-	return (pos,) + tuple([fw_map[k][d[k]] if k in d else 0 for k in _partial_keys])
+	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _partial_keys])
 
 def node_to_rep(node, encode_func=encode):
 	feats = parse_feature_to_dict(node.feats)
 	return encode_func(feats, node.xpostag)
 
-def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False, use_dependecies=True):
+def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False, mode="bigram"):
 	D = {}
 	ud = UD_collection(codecs.open(input_filepath, encoding="utf-8"))
 	total_trans = 0
 	token_dict = {}
 
-	if use_dependecies:
+	if mode == "dependencies"
 		for sentence in ud.sentences:
 			for node in sentence.find():
 				for child in node.children:
@@ -89,13 +85,20 @@ def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False
 						rtran_rep = child_rep + parent_rep
 						D[rtran_rep] = D.get(rtran_rep, 0) + 1
 
-	else:
+	elif mode == "bigram":
 		for sentence in ud.sentences:
 			tmp = sentence.find()
 			tmp.sort()
 			for a,b in zip(tmp,tmp[1:]):
 				arep = node_to_rep(a,encode_func=encode_func)
 				brep = node_to_rep(b,encode_func=encode_func)
+				D[arep + brep] = D.get(arep + brep, 0) + 1
+	elif mode == "comb":
+		for sentence in ud.sentences:
+			tmp = sentence.find()
+			for a,b in itertools.combinations(np.arange(len(tmp)), 2):
+				arep = node_to_rep(tmp[a],encode_func=encode_func)
+				brep = node_to_rep(tmp[b],encode_func=encode_func)
 				D[arep + brep] = D.get(arep + brep, 0) + 1
 
 	print "total trans : {} unique trans : {} unique tokens {} -> {}".format(total_trans, len(D), len(token_dict), len(token_dict)**2)
@@ -116,35 +119,37 @@ def make_hist(x):
 	plt.hist(x)
 	plt.show()
 
+# different scoring functions
+bigram_bool_score = lambda x,_ : np.sum([1 if a + b in valid_transitions else 0 for a,b in zip(x,x[1:])])
+
+bigram_count_score = lambda x,_ : np.sum([valid_transitions[a + b] if a + b in valid_transitions else 0 for a,b in zip(x,x[1:])])
+
+comb_bool_score = lambda x,_ : np.sum([1 if x[a] + x[b] in valid_transitions else 0 for a,b in itertools.combinations(range(len(x)),2)])
+
+relation_count_score = lambda x,r : np.sum([valid_transitions[x[a] + x[b]] if x[a] + x[b] in valid_transitions else 0 for a,b in r])
+
+relation_bool_score = lambda x,r : np.sum([1 if x[a] + x[b] in valid_transitions else 0 for a,b in r])
+
 if __name__ == "__main__":
 
-	fin = "/Users/Jeff/SFU/PhD/NLP/Universal Dependencies 2.2/ud-treebanks-v2.2/UD_Finnish-TDT/fi_tdt-ud-train.conllu"
-
-	# different scoring functions
-	bigram_bool_score = lambda x,_ : np.sum([1 if a + b in valid_transitions else 0 for a,b in zip(x,x[1:])])
-
-	bigram_count_score = lambda x,_ : np.sum([valid_transitions[a + b] if a + b in valid_transitions else 0 for a,b in zip(x,x[1:])])
-
-	comb_bool_score = lambda x,_ : np.sum([1 if x[a] + x[b] in valid_transitions else 0 for a,b in itertools.combinations(range(len(x)),2)])
-
-	relation_count_score = lambda x,r : np.sum([valid_transitions[x[a] + x[b]] if x[a] + x[b] in valid_transitions else 0 for a,b in r])
-
-	relation_bool_score = lambda x,r : np.sum([1 if x[a] + x[b] in valid_transitions else 0 for a,b in r])
+	UD_PATH = "/Users/Jeff/SFU/PhD/NLP/Universal Dependencies 2.2/ud-treebanks-v2.2/UD_Finnish-TDT/fi_tdt-ud-train.conllu"
 
 	ENCODE_FUNC = partial_encode
 	SCORE_FUNC = comb_bool_score
+	LEARN_MODE = "dependencies"
 
-	fw_map, bw_map = UD_tree_to_mapping(fin, cache="test.npz")
+	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test.npz")
 	dict_to_json("fw_map.json", fw_map)
 	dict_to_json("bw_map.json", bw_map)
 
 	_keys = fw_map.keys() # limit to just the keys we want though
-	_partial_keys = ["Case", "Number", "Person", "Polarity", "Tense", "Voice"]
+	_partial_keys = ["Case", "Connegative", "VerbForm", "Mood", "Number", "Person", "Tense", "Voice"]
 
-	valid_transitions = learn_from_UD_tree(fin, encode_func=ENCODE_FUNC)
+	valid_transitions = learn_from_UD_tree(
+		UD_PATH, encode_func=ENCODE_FUNC, mode=LEARN_MODE)
 
 	final_results = []
-	ud = UD_collection(codecs.open(fin, encoding="utf-8"))
+	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
 
 	for sentence in ud.sentences:
 		tmp = sentence.find()
