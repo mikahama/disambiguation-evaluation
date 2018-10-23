@@ -59,10 +59,10 @@ def UD_tree_to_mapping(input_filepath, **kwargs):
 	return (fw_map, bw_map)
 
 def encode(d, pos):
-	return (pos,) + tuple([fw_map[k][d[k]] if k in d else 0 for k in _keys])
+	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _keys])
 
 def partial_encode(d, pos):
-	return (pos,) + tuple([fw_map[k][d[k]] if k in d else 0 for k in _partial_keys])
+	return (pos,) + tuple([fw_map[k][d[k]] if k in d else -1 for k in _partial_keys])
 
 def node_to_rep(node, encode_func=encode):
 	feats = parse_feature_to_dict(node.feats)
