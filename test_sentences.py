@@ -52,9 +52,13 @@ def get_readings(sentence):
 		results.append(word_readings)
 	return results 
 
+
+
 if __name__ == '__main__':
-	disambiguations = __disambiguate(u"alan laulamaan")
+	s = u"Taitojen kehittyminen näytetään selkeästi yhdestä kymmeneen, ja esim. kitaransoittotaidon kehittyessä harjoittelu kuulostaa aina paremmalta, alussa se on vain rämpytystä, mutta taitojen kehittyessä soittoa kuuntelee mielellään"
+	disambiguations = __disambiguate(s)
 	for disambiguation in disambiguations:
 		possible_words = disambiguation[1]
 		for possible_word in possible_words:
 			print possible_word.morphology
+	print get_readings(s)
