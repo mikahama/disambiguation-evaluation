@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 	ENCODE_FUNC = partial_encode
 	COMBINE_FUNC = all_case_agree_combine
-	SCORE_FUNC = comb_bool_score
+	SCORE_FUNC = bigram_bool_score
 	LEARN_MODE = "dependencies"
 
 	ALL_UD_PATHS = [
@@ -144,14 +144,12 @@ if __name__ == "__main__":
 	]
 
 	TEST_UD_PATH = "ud/fi-ud-test.conllu"
-	LANG = "sme"
+	LANG = "fin"
 
 	fw_map, bw_map = UD_trees_to_mapping(
 		ALL_UD_PATHS, cache="master_map.npz", overwrite=False)
 	dict_to_json("fw_master_map.json", fw_map)
 	dict_to_json("bw_master_map.json", bw_map)
-
-	exit()
 
 	_keys = fw_map.keys() # limit to just the keys we want though
 
@@ -163,28 +161,46 @@ if __name__ == "__main__":
 	ud = UD_collection(codecs.open(TEST_UD_PATH, encoding="utf-8"))
 
 	# test by looking
-	"""
 	SCORE_FUNC = bigram_bool_score
-	for sentence in tqdm(ud.sentences):
+	count = 0
+	for sentence in ud.sentences[:10]:
 		all_readings = __give_all_possibilities(sentence, lang=LANG)
 		all_encoded = [[partial_encode(_,_["pos"]) for _ in word] for word in all_readings]
 
 		tmp = sentence.find()
 		tmp.sort()
 		target = [node_to_rep(node,encode_func=ENCODE_FUNC) for node in tmp]
+		raw_sentence = [node.form.encode('utf-8') for node in tmp]
 
 		score_to_reading_map = {}
-		score_to_reading_map[SCORE_FUNC(target)] = tmp.
-		for reading in itertools.product(*all_encoded):
+		#score_to_reading_map += [(SCORE_FUNC(target,[]), [parse_feature_to_dict(n.feats) for n in tmp])]
+		score_to_reading_map[SCORE_FUNC(target,[])] = [parse_feature_to_dict(n.feats) for n in tmp]
+		for info,reading in zip(itertools.product(*all_readings), itertools.product(*all_encoded)):
 			if not reading == target:
-				wrong_scores += [SCORE_FUNC(reading,[])]
-	"""
+				#score_to_reading_map += [(SCORE_FUNC(reading,[]), info)]
+				score_to_reading_map[SCORE_FUNC(reading,[])] = info
+
+		try:
+			print "\n\n"
+			print "=" * 100
+			print "=" * 100
+			print "EXAMPLE {} : {}".format(count, " ".join(raw_sentence))
+			print "-" * 100
+			for k,v in sorted(score_to_reading_map.items())[::-1]:
+				print k
+				for i,w in enumerate(v):
+					print "{0:30} {1}".format( raw_sentence[i], w )
+				print "-" * 100
+		except:
+			pass
+
+		count += 1
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde
-	colors = ['tab:blue', 'tab:red', 'tab:green', 'tab:purple']
+	colors = ['tab:blue'] #, 'tab:red', 'tab:green', 'tab:purple']
 	funcs = [bigram_bool_score, bigram_count_score, comb_bool_score, comb_count_score]
-	labels = ["bigram bool", "bigram count", "comb bool", "comb count"]
+	labels = ["bigram bool"] #, "bigram count", "comb bool", "comb count"]
 	handles = []
 
 	for color, SCORE_FUNC, label in zip(colors, funcs, labels):
@@ -210,12 +226,12 @@ if __name__ == "__main__":
 				target_score = SCORE_FUNC(target,[])
 
 				if len(wrong_scores) > 0:
-					results += [np.mean(np.asarray(wrong_scores) > target_score)]
+					results += [np.mean(np.asarray(wrong_scores) >= target_score)]
 
 		# plot the results
 		x = np.asarray(results)
 		x_grid = np.linspace(0.,1.,1000)
-		bandwidth=0.05
+		bandwidth=0.01
 		kde = gaussian_kde(x, bw_method=bandwidth / x.std(ddof=1))
 		y = kde.evaluate(x_grid)
 		y /= np.sum(y)
