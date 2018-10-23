@@ -6,8 +6,20 @@
         "0": "Post", 
         "1": "Prep"
     }, 
+    "AdvType": {
+        "0": "Deg", 
+        "1": "Loc", 
+        "2": "Man", 
+        "3": "Sta", 
+        "4": "Tim"
+    }, 
+    "Animacy": {
+        "0": "Anim", 
+        "1": "Hum"
+    }, 
     "Aspect": {
-        "0": "Perf"
+        "0": "Inch", 
+        "1": "Perf"
     }, 
     "Case": {
         "0": "Abe", 
@@ -16,38 +28,50 @@
         "3": "Ade", 
         "4": "All", 
         "5": "Apr", 
-        "6": "Com", 
-        "7": "Dat", 
-        "8": "Egr", 
-        "9": "Ela", 
-        "10": "Ess", 
-        "11": "Gen", 
-        "12": "Ill", 
-        "13": "Ine", 
-        "14": "Ins", 
-        "15": "Loc", 
-        "16": "Nom", 
-        "17": "Par", 
-        "18": "Prl", 
-        "19": "Ter", 
-        "20": "Tra"
+        "6": "Car", 
+        "7": "Com", 
+        "8": "Comp", 
+        "9": "Dat", 
+        "10": "Egr", 
+        "11": "Ela", 
+        "12": "Ess", 
+        "13": "Gen", 
+        "14": "Ill", 
+        "15": "Ine", 
+        "16": "Ins", 
+        "17": "Lat", 
+        "18": "Loc", 
+        "19": "Nom", 
+        "20": "Par", 
+        "21": "Prl", 
+        "22": "Temp", 
+        "23": "Ter", 
+        "24": "Tra"
     }, 
     "Clitic": {
-        "0": "Han", 
-        "1": "Han,Kin", 
-        "2": "Han,Ko", 
-        "3": "Han,Pa", 
-        "4": "Ka", 
-        "5": "Kaan", 
-        "6": "Kin", 
-        "7": "Ko", 
-        "8": "Ko,S", 
-        "9": "Pa", 
-        "10": "Pa,S", 
-        "11": "S"
+        "0": "Aja", 
+        "1": "Ga", 
+        "2": "Gak", 
+        "3": "Han", 
+        "4": "Han,Kin", 
+        "5": "Han,Ko", 
+        "6": "Han,Pa", 
+        "7": "Ja", 
+        "8": "Ka", 
+        "9": "Kaan", 
+        "10": "Kin", 
+        "11": "Ko", 
+        "12": "Ko,S", 
+        "13": "Pa", 
+        "14": "Pa,S", 
+        "15": "S"
     }, 
     "Connegative": {
         "0": "Yes"
+    }, 
+    "Definite": {
+        "0": "Def", 
+        "1": "Ind"
     }, 
     "Degree": {
         "0": "Cmp", 
@@ -55,32 +79,66 @@
         "2": "Sup"
     }, 
     "Derivation": {
-        "0": "Ig", 
-        "1": "Igmoz", 
-        "2": "Inen", 
-        "3": "Inen,Vs", 
-        "4": "Ja", 
-        "5": "Ja,Tar", 
-        "6": "Lainen", 
-        "7": "Lainen,Vs", 
-        "8": "Llinen", 
-        "9": "Llinen,Vs", 
-        "10": "Minen", 
-        "11": "Omon", 
-        "12": "Sti", 
-        "13": "Tar", 
-        "14": "Tog", 
-        "15": "Ton", 
-        "16": "Ton,Vs", 
-        "17": "Ttain", 
-        "18": "U", 
-        "19": "Vs"
+        "0": "A", 
+        "1": "AdvstO", 
+        "2": "An", 
+        "3": "DimKE", 
+        "4": "DimNe", 
+        "5": "Dimin", 
+        "6": "GenAttr", 
+        "7": "Ig", 
+        "8": "Igmoz", 
+        "9": "Ik", 
+        "10": "Ill", 
+        "11": "Ine", 
+        "12": "Inen", 
+        "13": "Inen,Vs", 
+        "14": "J", 
+        "15": "Ja", 
+        "16": "Ja,Tar", 
+        "17": "Kaj", 
+        "18": "Lainen", 
+        "19": "Lainen,Vs", 
+        "20": "Llinen", 
+        "21": "Llinen,Vs", 
+        "22": "Minen", 
+        "23": "Njems", 
+        "24": "NomAg", 
+        "25": "OkshnOms", 
+        "26": "Oma", 
+        "27": "Omka", 
+        "28": "Omon", 
+        "29": "OvOms", 
+        "30": "Ovt", 
+        "31": "OvtOms", 
+        "32": "Ozj", 
+        "33": "PrcPrt1", 
+        "34": "PronGak", 
+        "35": "Sa", 
+        "36": "Shka", 
+        "37": "Sti", 
+        "38": "Tar", 
+        "39": "Tog", 
+        "40": "Tom", 
+        "41": "Ton", 
+        "42": "Ton,Vs", 
+        "43": "Ttain", 
+        "44": "U", 
+        "45": "VGen", 
+        "46": "VerbYks", 
+        "47": "Voc", 
+        "48": "Vs", 
+        "49": "Y"
     }, 
     "Evident": {
         "0": "Nfh"
     }, 
     "Foreign": {
         "0": "Yes"
+    }, 
+    "Gender": {
+        "0": "Fem", 
+        "1": "Masc"
     }, 
     "InfForm": {
         "0": "1", 
@@ -89,23 +147,49 @@
     }, 
     "Mood": {
         "0": "Cnd", 
-        "1": "Imp", 
-        "2": "Ind", 
-        "3": "Pot"
+        "1": "CndCnj", 
+        "2": "Cnj", 
+        "3": "Des", 
+        "4": "Imp", 
+        "5": "Ind", 
+        "6": "Opt", 
+        "7": "Pot", 
+        "8": "Proh"
+    }, 
+    "NameType": {
+        "0": "Giv", 
+        "1": "Sur"
+    }, 
+    "NegationType": {
+        "0": "Contrastive"
     }, 
     "NumType": {
         "0": "Card", 
         "1": "Card,Ord", 
-        "2": "Ord"
+        "2": "Dist", 
+        "3": "Mult", 
+        "4": "Ord", 
+        "5": "OrdinalSets", 
+        "6": "Sets"
     }, 
     "Number": {
         "0": "Dual", 
         "1": "Plur", 
-        "2": "Sing"
+        "2": "Plur,Sing", 
+        "3": "Sing"
+    }, 
+    "Number[obj]": {
+        "0": "Plur", 
+        "1": "Sing"
     }, 
     "Number[psor]": {
         "0": "Dual", 
         "1": "Plur", 
+        "2": "Sing"
+    }, 
+    "Number[subj]": {
+        "0": "Plur", 
+        "1": "Plur,Sing", 
         "2": "Sing"
     }, 
     "PartForm": {
@@ -114,13 +198,26 @@
         "2": "Past", 
         "3": "Pres"
     }, 
+    "PartType": {
+        "0": "Emp"
+    }, 
     "Person": {
         "0": "0", 
         "1": "1", 
         "2": "2", 
         "3": "3"
     }, 
+    "Person[obj]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
     "Person[psor]": {
+        "0": "1", 
+        "1": "2", 
+        "2": "3"
+    }, 
+    "Person[subj]": {
         "0": "1", 
         "1": "2", 
         "2": "3"
@@ -133,9 +230,13 @@
         "1": "Dem", 
         "2": "Ind", 
         "3": "Int", 
-        "4": "Prs", 
-        "5": "Rcp", 
-        "6": "Rel"
+        "4": "Inter", 
+        "5": "Prs", 
+        "6": "Qnt", 
+        "7": "Rcp", 
+        "8": "Refl", 
+        "9": "Rel", 
+        "10": "Tot"
     }, 
     "Reflex": {
         "0": "Yes"
@@ -145,11 +246,22 @@
         "1": "Coll"
     }, 
     "Tense": {
-        "0": "Past", 
-        "1": "Pres"
+        "0": "Fut", 
+        "1": "Past", 
+        "2": "Pres", 
+        "3": "Prt1", 
+        "4": "Prt2"
     }, 
     "Typo": {
         "0": "Yes"
+    }, 
+    "Valency": {
+        "0": "1", 
+        "1": "2"
+    }, 
+    "Variant": {
+        "0": "Long", 
+        "1": "Short"
     }, 
     "VerbForm": {
         "0": "Conv", 
@@ -157,7 +269,11 @@
         "2": "Ger", 
         "3": "Inf", 
         "4": "Part", 
-        "5": "Sup"
+        "5": "Sup", 
+        "6": "Vnoun"
+    }, 
+    "VerbType": {
+        "0": "Aux"
     }, 
     "Voice": {
         "0": "Act", 

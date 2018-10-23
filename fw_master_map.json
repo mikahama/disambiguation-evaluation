@@ -6,8 +6,20 @@
         "Post": 0, 
         "Prep": 1
     }, 
+    "AdvType": {
+        "Deg": 0, 
+        "Loc": 1, 
+        "Man": 2, 
+        "Sta": 3, 
+        "Tim": 4
+    }, 
+    "Animacy": {
+        "Anim": 0, 
+        "Hum": 1
+    }, 
     "Aspect": {
-        "Perf": 0
+        "Inch": 0, 
+        "Perf": 1
     }, 
     "Case": {
         "Abe": 0, 
@@ -16,38 +28,50 @@
         "Ade": 3, 
         "All": 4, 
         "Apr": 5, 
-        "Com": 6, 
-        "Dat": 7, 
-        "Egr": 8, 
-        "Ela": 9, 
-        "Ess": 10, 
-        "Gen": 11, 
-        "Ill": 12, 
-        "Ine": 13, 
-        "Ins": 14, 
-        "Loc": 15, 
-        "Nom": 16, 
-        "Par": 17, 
-        "Prl": 18, 
-        "Ter": 19, 
-        "Tra": 20
+        "Car": 6, 
+        "Com": 7, 
+        "Comp": 8, 
+        "Dat": 9, 
+        "Egr": 10, 
+        "Ela": 11, 
+        "Ess": 12, 
+        "Gen": 13, 
+        "Ill": 14, 
+        "Ine": 15, 
+        "Ins": 16, 
+        "Lat": 17, 
+        "Loc": 18, 
+        "Nom": 19, 
+        "Par": 20, 
+        "Prl": 21, 
+        "Temp": 22, 
+        "Ter": 23, 
+        "Tra": 24
     }, 
     "Clitic": {
-        "Han": 0, 
-        "Han,Kin": 1, 
-        "Han,Ko": 2, 
-        "Han,Pa": 3, 
-        "Ka": 4, 
-        "Kaan": 5, 
-        "Kin": 6, 
-        "Ko": 7, 
-        "Ko,S": 8, 
-        "Pa": 9, 
-        "Pa,S": 10, 
-        "S": 11
+        "Aja": 0, 
+        "Ga": 1, 
+        "Gak": 2, 
+        "Han": 3, 
+        "Han,Kin": 4, 
+        "Han,Ko": 5, 
+        "Han,Pa": 6, 
+        "Ja": 7, 
+        "Ka": 8, 
+        "Kaan": 9, 
+        "Kin": 10, 
+        "Ko": 11, 
+        "Ko,S": 12, 
+        "Pa": 13, 
+        "Pa,S": 14, 
+        "S": 15
     }, 
     "Connegative": {
         "Yes": 0
+    }, 
+    "Definite": {
+        "Def": 0, 
+        "Ind": 1
     }, 
     "Degree": {
         "Cmp": 0, 
@@ -55,32 +79,66 @@
         "Sup": 2
     }, 
     "Derivation": {
-        "Ig": 0, 
-        "Igmoz": 1, 
-        "Inen": 2, 
-        "Inen,Vs": 3, 
-        "Ja": 4, 
-        "Ja,Tar": 5, 
-        "Lainen": 6, 
-        "Lainen,Vs": 7, 
-        "Llinen": 8, 
-        "Llinen,Vs": 9, 
-        "Minen": 10, 
-        "Omon": 11, 
-        "Sti": 12, 
-        "Tar": 13, 
-        "Tog": 14, 
-        "Ton": 15, 
-        "Ton,Vs": 16, 
-        "Ttain": 17, 
-        "U": 18, 
-        "Vs": 19
+        "A": 0, 
+        "AdvstO": 1, 
+        "An": 2, 
+        "DimKE": 3, 
+        "DimNe": 4, 
+        "Dimin": 5, 
+        "GenAttr": 6, 
+        "Ig": 7, 
+        "Igmoz": 8, 
+        "Ik": 9, 
+        "Ill": 10, 
+        "Ine": 11, 
+        "Inen": 12, 
+        "Inen,Vs": 13, 
+        "J": 14, 
+        "Ja": 15, 
+        "Ja,Tar": 16, 
+        "Kaj": 17, 
+        "Lainen": 18, 
+        "Lainen,Vs": 19, 
+        "Llinen": 20, 
+        "Llinen,Vs": 21, 
+        "Minen": 22, 
+        "Njems": 23, 
+        "NomAg": 24, 
+        "OkshnOms": 25, 
+        "Oma": 26, 
+        "Omka": 27, 
+        "Omon": 28, 
+        "OvOms": 29, 
+        "Ovt": 30, 
+        "OvtOms": 31, 
+        "Ozj": 32, 
+        "PrcPrt1": 33, 
+        "PronGak": 34, 
+        "Sa": 35, 
+        "Shka": 36, 
+        "Sti": 37, 
+        "Tar": 38, 
+        "Tog": 39, 
+        "Tom": 40, 
+        "Ton": 41, 
+        "Ton,Vs": 42, 
+        "Ttain": 43, 
+        "U": 44, 
+        "VGen": 45, 
+        "VerbYks": 46, 
+        "Voc": 47, 
+        "Vs": 48, 
+        "Y": 49
     }, 
     "Evident": {
         "Nfh": 0
     }, 
     "Foreign": {
         "Yes": 0
+    }, 
+    "Gender": {
+        "Fem": 0, 
+        "Masc": 1
     }, 
     "InfForm": {
         "1": 0, 
@@ -89,23 +147,49 @@
     }, 
     "Mood": {
         "Cnd": 0, 
-        "Imp": 1, 
-        "Ind": 2, 
-        "Pot": 3
+        "CndCnj": 1, 
+        "Cnj": 2, 
+        "Des": 3, 
+        "Imp": 4, 
+        "Ind": 5, 
+        "Opt": 6, 
+        "Pot": 7, 
+        "Proh": 8
+    }, 
+    "NameType": {
+        "Giv": 0, 
+        "Sur": 1
+    }, 
+    "NegationType": {
+        "Contrastive": 0
     }, 
     "NumType": {
         "Card": 0, 
         "Card,Ord": 1, 
-        "Ord": 2
+        "Dist": 2, 
+        "Mult": 3, 
+        "Ord": 4, 
+        "OrdinalSets": 5, 
+        "Sets": 6
     }, 
     "Number": {
         "Dual": 0, 
         "Plur": 1, 
-        "Sing": 2
+        "Plur,Sing": 2, 
+        "Sing": 3
+    }, 
+    "Number[obj]": {
+        "Plur": 0, 
+        "Sing": 1
     }, 
     "Number[psor]": {
         "Dual": 0, 
         "Plur": 1, 
+        "Sing": 2
+    }, 
+    "Number[subj]": {
+        "Plur": 0, 
+        "Plur,Sing": 1, 
         "Sing": 2
     }, 
     "PartForm": {
@@ -114,13 +198,26 @@
         "Past": 2, 
         "Pres": 3
     }, 
+    "PartType": {
+        "Emp": 0
+    }, 
     "Person": {
         "0": 0, 
         "1": 1, 
         "2": 2, 
         "3": 3
     }, 
+    "Person[obj]": {
+        "1": 0, 
+        "2": 1, 
+        "3": 2
+    }, 
     "Person[psor]": {
+        "1": 0, 
+        "2": 1, 
+        "3": 2
+    }, 
+    "Person[subj]": {
         "1": 0, 
         "2": 1, 
         "3": 2
@@ -133,9 +230,13 @@
         "Dem": 1, 
         "Ind": 2, 
         "Int": 3, 
-        "Prs": 4, 
-        "Rcp": 5, 
-        "Rel": 6
+        "Inter": 4, 
+        "Prs": 5, 
+        "Qnt": 6, 
+        "Rcp": 7, 
+        "Refl": 8, 
+        "Rel": 9, 
+        "Tot": 10
     }, 
     "Reflex": {
         "Yes": 0
@@ -145,11 +246,22 @@
         "Coll": 1
     }, 
     "Tense": {
-        "Past": 0, 
-        "Pres": 1
+        "Fut": 0, 
+        "Past": 1, 
+        "Pres": 2, 
+        "Prt1": 3, 
+        "Prt2": 4
     }, 
     "Typo": {
         "Yes": 0
+    }, 
+    "Valency": {
+        "1": 0, 
+        "2": 1
+    }, 
+    "Variant": {
+        "Long": 0, 
+        "Short": 1
     }, 
     "VerbForm": {
         "Conv": 0, 
@@ -157,7 +269,11 @@
         "Ger": 2, 
         "Inf": 3, 
         "Part": 4, 
-        "Sup": 5
+        "Sup": 5, 
+        "Vnoun": 6
+    }, 
+    "VerbType": {
+        "Aux": 0
     }, 
     "Voice": {
         "Act": 0, 
