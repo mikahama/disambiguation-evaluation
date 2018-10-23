@@ -12,6 +12,7 @@ order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
 #mappings = json_load("fi_mappings.json")
 import json
 mappings = json.load(open("fi_mappings.json", "r"))
+poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct"]
 
 
 def __disambiguate(sentence):
@@ -26,7 +27,6 @@ def __parse_morphology(morphology):
 	#CC,CS -> C
 	#Pr, Po -> Adp
 	reading = {}
-	poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct"]
 	for pos in poses:
 		if pos in morphology:
 			if pos == "CS" or pos == "CC":
@@ -56,6 +56,7 @@ def __parse_fst_morphologies(morphology_list):
 	return output
 
 def __change_ud_morphology(sentence, change_x_times):
+	sent = []
 	random.seed()
 	nodes = sentence.find()
 	nodes.sort()
@@ -66,19 +67,36 @@ def __change_ud_morphology(sentence, change_x_times):
 		replace = random.sample(replace, change_x_times)
 	for i in range(len(nodes)):
 		node = nodes[i]
+		morphology = parse_feature_to_dict(node.feats)
+		print node.feats
+		morphology["pos"] = node.xpostag
 		if i in replace:
-			morphology = parse_feature_to_dict(node.feats)
-			morphology["pos"] = node.xpostag
-			print morphology
 			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), "fin"))
-			print replacements
-			quit()
+			was_changed = False
+			for replacement in replacements:
+				for k in _partial_keys:
+					if k in replacement:
+						if (k in morphology and replacement[k] != morphology[k]) or k not in morphology:
+							morphology = replacement
+							break
+				if was_changed:
+					break
+			if not was_changed:
+				morphology["pos"] = random.choice(poses)
+		sent.append(morphology)
+	return sent
+
+
+
+
 
 
 def produce_tests():
 	ud = UD_collection(codecs.open("ud/fi-ud-train.conllu", encoding="utf-8"))
 	for sentence in ud.sentences:
-		__change_ud_morphology(sentence, 1)
+		morphs = __change_ud_morphology(sentence, 1)
+		print morphs
+		quit()
 
 
 def get_readings(sentence):
