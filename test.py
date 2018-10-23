@@ -8,6 +8,7 @@ import itertools
 from tqdm import tqdm
 import operator
 from test_sentences import get_readings
+from common import parse_feature_to_dict
 
 # TODO : a function that returns all possible readings
 # TODO : measure how often our function finds a better solution than the model in cases where the model does not return the true solution
@@ -35,10 +36,6 @@ def parse_feature(s):
 		return []
 	return [tuple(_.split("=")) for _ in s.split("|")]
 
-def parse_feature_to_dict(s):
-	if s == "_":
-		return {}
-	return {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
 
 @cache_wrapper
 def UD_tree_to_mapping(input_filepath, **kwargs):
