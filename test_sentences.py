@@ -136,4 +136,5 @@ if __name__ == '__main__':
 	fw_map, bw_map = UD_tree_to_mapping(UD_PATH, cache="test_kpv.npz")
 	#produce_tests()
 	dict_to_json("bw_map_kpv.json", bw_map)
+	dict_to_json("fw_map_kpv.json", fw_map)
 
