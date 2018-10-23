@@ -68,7 +68,7 @@ def __change_ud_morphology(sentence, change_x_times):
 	for i in range(len(nodes)):
 		node = nodes[i]
 		morphology = parse_feature_to_dict(node.feats)
-		print node.feats
+		#print node.feats
 		morphology["pos"] = node.xpostag
 		if i in replace:
 			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), "fin"))
