@@ -34,20 +34,23 @@ def parse_feature(s):
 	return [tuple(_.split("=")) for _ in s.split("|")]
 
 @cache_wrapper
-def UD_tree_to_mapping(input_filepath, **kwargs):
+def UD_trees_to_mapping(input_filepaths, **kwargs):
+
+	if not isinstance(input_filepaths, list):
+		input_filepaths = [input_filepaths]
 
 	_map = {}
-	ud = UD_collection(codecs.open(input_filepath, encoding="utf-8"))
-	for sentence in ud.sentences:
-		for node in sentence.find(): # for each node get all children
-			for type, value in parse_feature(node.feats):
-				if not type in _map:
-					_map[type] = [value]
-				else:
-					_map[type] += [value]
+	for input_filepath in input_filepaths:
+		ud = UD_collection(codecs.open(input_filepath, encoding="utf-8"))
+		for sentence in ud.sentences:
+			for node in sentence.find(): # for each node get all children
+				for type, value in parse_feature(node.feats):
+					if not type in _map:
+						_map[type] = [value]
+					else:
+						_map[type] += [value]
 
 	_map = {k:np.unique(v) for k,v in _map.items()}
 	fw_map = {k:{x:i for i,x in enumerate(v)} for k,v in _map.items()}
 	bw_map = {k:{i:x for i,x in enumerate(v)} for k,v in _map.items()}
 	return (fw_map, bw_map)
-

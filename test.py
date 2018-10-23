@@ -133,9 +133,13 @@ if __name__ == "__main__":
 	SCORE_FUNC = comb_bool_score
 	LEARN_MODE = "dependencies"
 
-	fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_kpv.npz")
-	#dict_to_json("fw_map_kpv.json", fw_map)
-	#dict_to_json("bw_map_kpv.json", bw_map)
+	ALL_UD_PATHS = ["ud/fi-ud-train.conllu", "ud/kpv_lattice-ud-test.conllu"]
+
+	fw_map, bw_map = UD_trees_to_mapping(ALL_UD_PATHS, cache="master_map.npz")
+	dict_to_json("fw_master_map.json", fw_map)
+	dict_to_json("bw_master_map.json", bw_map)
+
+	exit()
 
 	_keys = fw_map.keys() # limit to just the keys we want though
 
