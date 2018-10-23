@@ -4,7 +4,7 @@ from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
 #from mikatools import *
-from common import parse_feature_to_dict
+from common import parse_feature_to_dict, _partial_keys
 import random
 import codecs
 

@@ -8,7 +8,7 @@ import itertools
 from tqdm import tqdm
 import operator
 from test_sentences import get_readings
-from common import parse_feature_to_dict
+from common import parse_feature_to_dict, _partial_keys
 
 def cache_wrapper(func):
 	def call(*args, **kwargs):
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 	dict_to_json("bw_map.json", bw_map)
 
 	_keys = fw_map.keys() # limit to just the keys we want though
-	_partial_keys = ["Case", "Connegative", "VerbForm", "Mood", "Number", "Person", "Tense", "Voice"]
+	
 
 	valid_transitions = learn_from_UD_tree(
 		UD_PATH, encode_func=ENCODE_FUNC, mode=LEARN_MODE)
