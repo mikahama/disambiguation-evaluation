@@ -1,0 +1,166 @@
+{
+    "Abbr": {
+        "Yes": 0
+    }, 
+    "AdpType": {
+        "Post": 0, 
+        "Prep": 1
+    }, 
+    "Aspect": {
+        "Perf": 0
+    }, 
+    "Case": {
+        "Abe": 0, 
+        "Abl": 1, 
+        "Acc": 2, 
+        "Ade": 3, 
+        "All": 4, 
+        "Apr": 5, 
+        "Com": 6, 
+        "Dat": 7, 
+        "Egr": 8, 
+        "Ela": 9, 
+        "Ess": 10, 
+        "Gen": 11, 
+        "Ill": 12, 
+        "Ine": 13, 
+        "Ins": 14, 
+        "Loc": 15, 
+        "Nom": 16, 
+        "Par": 17, 
+        "Prl": 18, 
+        "Ter": 19, 
+        "Tra": 20
+    }, 
+    "Clitic": {
+        "Han": 0, 
+        "Han,Kin": 1, 
+        "Han,Ko": 2, 
+        "Han,Pa": 3, 
+        "Ka": 4, 
+        "Kaan": 5, 
+        "Kin": 6, 
+        "Ko": 7, 
+        "Ko,S": 8, 
+        "Pa": 9, 
+        "Pa,S": 10, 
+        "S": 11
+    }, 
+    "Connegative": {
+        "Yes": 0
+    }, 
+    "Degree": {
+        "Cmp": 0, 
+        "Pos": 1, 
+        "Sup": 2
+    }, 
+    "Derivation": {
+        "Ig": 0, 
+        "Igmoz": 1, 
+        "Inen": 2, 
+        "Inen,Vs": 3, 
+        "Ja": 4, 
+        "Ja,Tar": 5, 
+        "Lainen": 6, 
+        "Lainen,Vs": 7, 
+        "Llinen": 8, 
+        "Llinen,Vs": 9, 
+        "Minen": 10, 
+        "Omon": 11, 
+        "Sti": 12, 
+        "Tar": 13, 
+        "Tog": 14, 
+        "Ton": 15, 
+        "Ton,Vs": 16, 
+        "Ttain": 17, 
+        "U": 18, 
+        "Vs": 19
+    }, 
+    "Evident": {
+        "Nfh": 0
+    }, 
+    "Foreign": {
+        "Yes": 0
+    }, 
+    "InfForm": {
+        "1": 0, 
+        "2": 1, 
+        "3": 2
+    }, 
+    "Mood": {
+        "Cnd": 0, 
+        "Imp": 1, 
+        "Ind": 2, 
+        "Pot": 3
+    }, 
+    "NumType": {
+        "Card": 0, 
+        "Card,Ord": 1, 
+        "Ord": 2
+    }, 
+    "Number": {
+        "Dual": 0, 
+        "Plur": 1, 
+        "Sing": 2
+    }, 
+    "Number[psor]": {
+        "Dual": 0, 
+        "Plur": 1, 
+        "Sing": 2
+    }, 
+    "PartForm": {
+        "Agt": 0, 
+        "Neg": 1, 
+        "Past": 2, 
+        "Pres": 3
+    }, 
+    "Person": {
+        "0": 0, 
+        "1": 1, 
+        "2": 2, 
+        "3": 3
+    }, 
+    "Person[psor]": {
+        "1": 0, 
+        "2": 1, 
+        "3": 2
+    }, 
+    "Polarity": {
+        "Neg": 0
+    }, 
+    "PronType": {
+        "Coll": 0, 
+        "Dem": 1, 
+        "Ind": 2, 
+        "Int": 3, 
+        "Prs": 4, 
+        "Rcp": 5, 
+        "Rel": 6
+    }, 
+    "Reflex": {
+        "Yes": 0
+    }, 
+    "Style": {
+        "Arch": 0, 
+        "Coll": 1
+    }, 
+    "Tense": {
+        "Past": 0, 
+        "Pres": 1
+    }, 
+    "Typo": {
+        "Yes": 0
+    }, 
+    "VerbForm": {
+        "Conv": 0, 
+        "Fin": 1, 
+        "Ger": 2, 
+        "Inf": 3, 
+        "Part": 4, 
+        "Sup": 5
+    }, 
+    "Voice": {
+        "Act": 0, 
+        "Pass": 1
+    }
+}
