@@ -1,0 +1,80 @@
+{
+    "Aspect": {
+        "Perf": 0
+    }, 
+    "Case": {
+        "Abe": 0, 
+        "Acc": 1, 
+        "Com": 2, 
+        "Ess": 3, 
+        "Gen": 4, 
+        "Ill": 5, 
+        "Loc": 6, 
+        "Nom": 7
+    }, 
+    "Connegative": {
+        "Yes": 0
+    }, 
+    "Degree": {
+        "Cmp": 0, 
+        "Sup": 1
+    }, 
+    "Mood": {
+        "Cnd": 0, 
+        "Imp": 1, 
+        "Ind": 2, 
+        "Pot": 3
+    }, 
+    "NumType": {
+        "Card": 0
+    }, 
+    "Number": {
+        "Dual": 0, 
+        "Plur": 1, 
+        "Sing": 2
+    }, 
+    "Number[psor]": {
+        "Dual": 0, 
+        "Plur": 1, 
+        "Sing": 2
+    }, 
+    "Person": {
+        "1": 0, 
+        "2": 1, 
+        "3": 2
+    }, 
+    "Person[psor]": {
+        "1": 0, 
+        "2": 1, 
+        "3": 2
+    }, 
+    "Polarity": {
+        "Neg": 0
+    }, 
+    "PronType": {
+        "Coll": 0, 
+        "Dem": 1, 
+        "Ind": 2, 
+        "Int": 3, 
+        "Prs": 4, 
+        "Rcp": 5, 
+        "Rel": 6
+    }, 
+    "Reflex": {
+        "Yes": 0
+    }, 
+    "Tense": {
+        "Past": 0, 
+        "Pres": 1
+    }, 
+    "VerbForm": {
+        "Fin": 0, 
+        "Ger": 1, 
+        "Inf": 2, 
+        "Part": 3, 
+        "Sup": 4
+    }, 
+    "Voice": {
+        "Pass": 0
+    }
+}
