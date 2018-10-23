@@ -53,7 +53,9 @@ def __parse_fst_morphologies(morphology_list):
 	for morphology in morphology_list:
 		m = morphology[0].replace("@@","+").replace("@","+")
 		m = m.split("+")[1:]
-		output.append(__parse_morphology(m))
+		morph = __parse_morphology(m)
+		if len(morph["pos"]) != 0:
+			output.append(morph)
 	return output
 
 def __change_ud_morphology(sentence, change_x_times, lang="fin"):
@@ -132,9 +134,9 @@ if __name__ == '__main__':
 			print possible_word.morphology
 	print get_readings(s)
 	"""
-	UD_PATH = "ud/sme_giella-ud-train.conllu"
-	fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_sme.npz")
-	#produce_tests()
-	dict_to_json("bw_map_sme.json", bw_map)
-	dict_to_json("fw_map_sme.json", fw_map)
+	#UD_PATH = "ud/sme_giella-ud-train.conllu"
+	#fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_sme.npz")
+	produce_tests()
+	#dict_to_json("bw_map_sme.json", bw_map)
+	#dict_to_json("fw_map_sme.json", fw_map)
 
