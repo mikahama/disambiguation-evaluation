@@ -3,7 +3,6 @@ from uralicNLP.cg3 import Cg3
 from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
-#from mikatools import *
 from common import *
 import random
 import codecs
@@ -11,7 +10,6 @@ from subprocess import call
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
-#mappings = json_load("fi_mappings.json")
 import json
 mappings = json.load(open("fi_mappings.json", "r"))
 poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct", "Det", "Pcle"]
