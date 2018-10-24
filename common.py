@@ -4,6 +4,7 @@ from uralicNLP.ud_tools import UD_collection
 from maps import ud_pos
 from proposition_map import props
 from fw_master_map import fw_map
+import operator
 
 np.warnings.filterwarnings('ignore')
 
@@ -21,6 +22,18 @@ def parse_node_to_dict(node):
 	d = parse_feature_to_dict(node.feats)
 	d["POS"] = ud_pos[node.xpostag]
 	return d
+
+# tuple of tuple to list of list
+def tt_ll(tt):
+	return [[_ for _ in t] for t in tt]
+
+# fill the gaps for sending into smpf again
+def fill_gaps(ll,x):
+	nl = []
+	for l in ll:
+		nl += [l]
+		nl += [[x]]
+	return reduce(operator.add, nl)
 
 def apply_forward_map_to_dict(d,fw_map,index=1):
 	return [fw_map[k][v][index] for k,v in d.items()]
@@ -99,13 +112,20 @@ if __name__ == "__main__":
 	import os, json, codecs
 	from uralicNLP.ud_tools import UD_collection
 	from common import parse_feature_to_dict
-	from test_sentences import spmf_format_to_file
+	from test_sentences import spmf_format_to_file, read_spmf_output
+	import operator
 
 	ud = UD_collection(codecs.open("ud/fi-ud-test.conllu", encoding="utf-8"))
-	ll = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
-	spmf_format_to_file(ll, "test_spmf.txt")
+	#ll = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
+	#spmf_format_to_file(ll, "test_spmf.txt")
 
+	patt = [tt_ll(x) for x in read_spmf_output("test_spmf_output.txt").keys()]
+	patt = fill_gaps(patt, [999])
+
+	# add the sentence to be tested to patt
+	patt + UD_sentence_to_list(ud.sentences[0])
 	
+
 
 
 
