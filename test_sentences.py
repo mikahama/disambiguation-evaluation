@@ -7,6 +7,7 @@ from nltk.tokenize import word_tokenize
 from common import *
 import random
 import codecs
+from subprocess import call
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
@@ -17,6 +18,9 @@ poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", 
 
 master_keys = ["pos"] + mappings.keys()
 master_keys.sort()
+
+def run_spmf(algorithm, input_file, output_file, min_sup=50, spmf_path="spmf.jar"):
+	call(["java", "-jar", spmf_path, "run", algorithm, input_file, output_file, str(min_sup)+"%"])
 
 def __spmf_format_sentence(sent):
 	sentence = []
@@ -186,6 +190,7 @@ if __name__ == '__main__':
 	#print spmf_format_sentences(sentences)
 	#print __parse_spmf_line("2 3 -1 1 4 -1 #SUP: 2")
 	print read_spmf_output("test.txt")
+	#run_spmf("SPADE", "test_spmf.txt", "test_spmf_out.txt")
 	#spmf_format_to_file(sentences, "test.txt")
 	#produce_tests()
 	#dict_to_json("bw_map_sme.json", bw_map)
