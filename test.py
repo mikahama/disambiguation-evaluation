@@ -11,6 +11,9 @@ from test_sentences import get_readings, __change_ud_morphology, __give_all_poss
 from common import _partial_keys
 from common import *
 
+def comb_in_window(n,k,w):
+	return itertools.ifilter(lambda _ : np.max(_) - np.min(_) < w, itertools.combinations(range(n), k))
+
 def increment_dict(d,k):
 	d[k] = d.get(k,0) + 1
 
@@ -21,6 +24,10 @@ def encode(d, pos):
 def partial_encode(d, pos):
 	assert type(pos) == unicode
 	return (pos,) + tuple([fw_map[k].get(d[k],-1)  if k in d else -1 for k in _partial_keys])
+
+def pos_encode(d, pos):
+	assert type(pos) == unicode
+	return (pos,)
 
 def node_to_rep(node, encode_func=encode):
 	feats = parse_feature_to_dict(node.feats)
@@ -63,6 +70,48 @@ def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False
 				increment_dict(model, arep + brep)
 				token_dict[arep + brep] = True
 				total_trans += 1
+	elif mode == "trigram":
+		for sentence in tqdm(ud.sentences):
+			tmp = sentence.find()
+			tmp.sort()
+			for a,b,c in zip(tmp,tmp[1:],tmp[2:]):
+				arep = node_to_rep(a,encode_func=encode_func)
+				brep = node_to_rep(b,encode_func=encode_func)
+				crep = node_to_rep(c,encode_func=encode_func)
+				increment_dict(model, arep + brep + crep)
+				token_dict[arep] = True
+				token_dict[brep] = True
+				token_dict[crep] = True
+				total_trans += 1
+	elif mode == "fgram":
+		for sentence in tqdm(ud.sentences):
+			tmp = sentence.find()
+			tmp.sort()
+			for a,b,c,d in zip(tmp,tmp[1:],tmp[2:],tmp[3:]):
+				arep = node_to_rep(a,encode_func=encode_func)
+				brep = node_to_rep(b,encode_func=encode_func)
+				crep = node_to_rep(c,encode_func=encode_func)
+				drep = node_to_rep(d,encode_func=encode_func)
+				increment_dict(model, arep + brep + crep + drep)
+				token_dict[arep] = True
+				token_dict[brep] = True
+				token_dict[crep] = True
+				token_dict[drep] = True
+				total_trans += 1
+	elif mode == "skipgram":
+		# skip to different combinations three out of window four
+		ws = 4
+		for sentence in tqdm(ud.sentences):
+			tmp = sentence.find()
+			tmp.sort()
+			reps = [node_to_rep(node, encode_func=encode_func) for node in tmp]
+			for idx in comb_in_window(len(reps),ws-1,ws):
+				sym = [('x',)] * ws
+				for i in idx:
+					sym[i-np.min(idx)] = reps[o+i]
+				sym = reduce(operator.add, sym)
+				increment_dict(model, sym)
+
 	elif mode == "comb":
 		for sentence in tqdm(ud.sentences):
 			reps = [node_to_rep(node, encode_func=encode_func) for node in sentence.find()]
@@ -104,9 +153,33 @@ def make_hist(x):
 	plt.show()
 
 # different scoring functions
+def skipgram_bool_score(x,_):
+	ws = 4
+	score = 0
+	for o in range(len(x)-ws+1):
+		for idx in itertools.combinations(range(ws),ws-1):
+			sym = [('x',)] * ws
+			for i in idx:
+				sym[i-np.min(x)] = x[i]
+			sym = reduce(operator.add, sym)
+			score += min(VALID.get(sym,0),1)
+	return score
+
 bigram_bool_score = lambda x,_ : np.sum([1 if COMBINE_FUNC(a,b) in VALID else 0 for a,b in zip(x,x[1:])])
 
 bigram_count_score = lambda x,_ : np.sum([VALID.get(COMBINE_FUNC(a,b),0) for a,b in zip(x,x[1:])])
+
+trigram_bool_score = lambda x,_ : np.sum([1 if a + b + c in VALID else 0 for a,b,c in zip(x,x[1:],x[2:])])
+
+trigram_count_score = lambda x,_ : np.sum([VALID.get(a + b + c,0) for a,b,c in zip(x,x[1:],x[2:])])
+
+trigram_bigram_bool_score = lambda x,_ : bigram_bool_score(x,_) + trigram_bool_score(x,_)
+
+trigram_bigram_pos_bool_score = lambda x,_ : bigram_bool_score(x,_) + trigram_bool_score(x,_) + bigram_bool_score([(e[0],) for e in x],_) + trigram_bool_score([(e[0],) for e in x],_)
+
+trigram_bigram_pos_only_bool_score = lambda x,_ : bigram_bool_score([(e[0],) for e in x],_) + trigram_bool_score([(e[0],) for e in x],_)
+
+fgram_bool_score = lambda x,_ : np.sum([1 if a + b + c + d in VALID else 0 for a,b,c,d in zip(x,x[1:],x[2:],x[3:])])
 
 comb_bool_score = lambda x,_ : np.sum([1 if COMBINE_FUNC(x[a],x[b]) in VALID else 0 for a,b in itertools.combinations(range(len(x)),2)])
 
@@ -126,9 +199,10 @@ all_case_agree_combine = lambda a,b : tuple([i == j for i,j in zip(a,b)])
 if __name__ == "__main__":
 
 	ENCODE_FUNC = partial_encode
-	COMBINE_FUNC = all_case_agree_combine
-	SCORE_FUNC = bigram_bool_score
-	LEARN_MODE = "dependencies"
+	COMBINE_FUNC = default_combine
+	SCORE_FUNC = bigram_count_score
+	LEARN_MODES = ["bigram", "trigram", "fgram", "skipgram"]
+	TITLE = "FIN"
 
 	ALL_UD_PATHS = [
 		"ud/fi-ud-train.conllu",
@@ -147,21 +221,29 @@ if __name__ == "__main__":
 	LANG = "fin"
 
 	fw_map, bw_map = UD_trees_to_mapping(
-		ALL_UD_PATHS, cache="master_map.npz", overwrite=False)
+		ALL_UD_PATHS, cache="master_map.npz", overwrite=True)
 	dict_to_json("fw_master_map.json", fw_map)
 	dict_to_json("bw_master_map.json", bw_map)
+
+	exit()
 
 	_keys = fw_map.keys() # limit to just the keys we want though
 
 	VALID = {}
 	for udpath in TRAIN_UD_PATHS:
+		for learnmode in LEARN_MODES:
+			VALID = learn_from_UD_tree(
+				udpath, encode_func=ENCODE_FUNC, mode=learnmode, model=VALID)
+
+	for learnmode in LEARN_MODES:
 		VALID = learn_from_UD_tree(
-			udpath, encode_func=ENCODE_FUNC, mode=LEARN_MODE, model=VALID)
+			TRAIN_UD_PATHS[0], encode_func=pos_encode, mode=learnmode, model=VALID)
 
 	ud = UD_collection(codecs.open(TEST_UD_PATH, encoding="utf-8"))
 
 	# test by looking
-	SCORE_FUNC = bigram_bool_score
+	#"""
+	SCORE_FUNC = skipgram_bool_score
 	count = 0
 	for sentence in ud.sentences[:10]:
 		all_readings = __give_all_possibilities(sentence, lang=LANG)
@@ -172,13 +254,13 @@ if __name__ == "__main__":
 		target = [node_to_rep(node,encode_func=ENCODE_FUNC) for node in tmp]
 		raw_sentence = [node.form.encode('utf-8') for node in tmp]
 
-		score_to_reading_map = {}
-		#score_to_reading_map += [(SCORE_FUNC(target,[]), [parse_feature_to_dict(n.feats) for n in tmp])]
-		score_to_reading_map[SCORE_FUNC(target,[])] = [parse_feature_to_dict(n.feats) for n in tmp]
+		score_to_reading_map = []
+		score_to_reading_map += [(SCORE_FUNC(target,[]), [parse_feature_to_dict(n.feats) for n in tmp])]
+		#score_to_reading_map[SCORE_FUNC(target,[])] = [parse_feature_to_dict(n.feats) for n in tmp]
 		for info,reading in zip(itertools.product(*all_readings), itertools.product(*all_encoded)):
 			if not reading == target:
-				#score_to_reading_map += [(SCORE_FUNC(reading,[]), info)]
-				score_to_reading_map[SCORE_FUNC(reading,[])] = info
+				score_to_reading_map += [(SCORE_FUNC(reading,[]), info)]
+				#score_to_reading_map[SCORE_FUNC(reading,[])] = info
 
 		try:
 			print "\n\n"
@@ -186,7 +268,7 @@ if __name__ == "__main__":
 			print "=" * 100
 			print "EXAMPLE {} : {}".format(count, " ".join(raw_sentence))
 			print "-" * 100
-			for k,v in sorted(score_to_reading_map.items())[::-1]:
+			for k,v in sorted(score_to_reading_map)[::-1]:
 				print k
 				for i,w in enumerate(v):
 					print "{0:30} {1}".format( raw_sentence[i], w )
@@ -195,12 +277,16 @@ if __name__ == "__main__":
 			pass
 
 		count += 1
+	#"""
+	exit()
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde
-	colors = ['tab:blue'] #, 'tab:red', 'tab:green', 'tab:purple']
-	funcs = [bigram_bool_score, bigram_count_score, comb_bool_score, comb_count_score]
-	labels = ["bigram bool"] #, "bigram count", "comb bool", "comb count"]
+	colors = ['tab:blue', 'tab:red', 'tab:green', 'tab:purple', 'tab:grey', 'tab:orange', 'tab:brown', 'tab:pink', 'tab:olive', 'tab:cyan']
+	#funcs = [bigram_bool_score, bigram_count_score, comb_bool_score, comb_count_score]
+	#labels = ["bigram bool", "bigram count", "comb bool", "comb count"]
+	labels = ["trigram_bool", "trigram_count", "bigram_bool", "fgram_bool", "tribigram_bool", "tribigram_bool_pos", "tribigram_bool_pos_only", "skipgram_bool", "comb_bool"]
+	funcs = [trigram_bool_score, trigram_count_score, bigram_bool_score, fgram_bool_score, trigram_bigram_bool_score, trigram_bigram_pos_bool_score, trigram_bigram_pos_only_bool_score, skipgram_bool_score, comb_bool_score]
 	handles = []
 
 	for color, SCORE_FUNC, label in zip(colors, funcs, labels):
@@ -216,6 +302,7 @@ if __name__ == "__main__":
 			target = [node_to_rep(node,encode_func=ENCODE_FUNC) for node in tmp]
 
 			N = np.product([len(_) for _ in all_encoded])
+			#print([len(_) for _ in all_encoded], N)
 			if N < 10000:
 				# remove target from all_encoded if it is there
 				wrong_scores = []
@@ -228,7 +315,10 @@ if __name__ == "__main__":
 				if len(wrong_scores) > 0:
 					results += [np.mean(np.asarray(wrong_scores) >= target_score)]
 
+					#print wrong_scores, target_score
+
 		# plot the results
+		#print(results)
 		x = np.asarray(results)
 		x_grid = np.linspace(0.,1.,1000)
 		bandwidth=0.01
@@ -237,10 +327,11 @@ if __name__ == "__main__":
 		y /= np.sum(y)
 		y = np.cumsum(y)
 
-		plt.plot(x_grid,y,color=color,label=label)
+		plt.plot(x_grid,y,color=color,label=label,alpha=0.75)
 		plt.xticks(np.linspace(0.,1.,11))
 
 	plt.legend(loc='upper left')
+	plt.title(TITLE)
 	plt.show()
 
 	exit()
