@@ -1,6 +1,7 @@
 import os, json, codecs
 import numpy as np
 from uralicNLP.ud_tools import UD_collection
+from maps import ud_pos
 
 np.warnings.filterwarnings('ignore')
 
@@ -36,7 +37,7 @@ def parse_feature(s):
 @cache_wrapper
 def UD_trees_to_mapping(input_filepaths, **kwargs):
 
-	# now this will also include pos tags
+	#NOTE : now this will also include pos tags
 
 	if not isinstance(input_filepaths, list):
 		input_filepaths = [input_filepaths]
@@ -53,9 +54,9 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 					else:
 						_map[type] += [value]
 				if not "POS" in _map:
-					_map["POS"] = [node.xpostag]
+					_map["POS"] = [ud_pos[node.xpostag]]
 				else:
-					_map["POS"] += [node.xpostag]
+					_map["POS"] += [ud_pos[node.xpostag]]
 
 	_map = {k:np.sort(np.unique(v)) for k,v in _map.items()}
 	fw_map = {}
