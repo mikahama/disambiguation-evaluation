@@ -57,7 +57,15 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 				else:
 					_map["POS"] += [node.xpostag]
 
-	_map = {k:np.unique(v) for k,v in _map.items()}
-	fw_map = {k:{x:i for i,x in enumerate(v)} for k,v in _map.items()}
-	bw_map = {k:{i:x for i,x in enumerate(v)} for k,v in _map.items()}
+	_map = {k:np.sort(np.unique(v)) for k,v in _map.items()}
+	fw_map = {}
+	bw_map = {}
+	fw_count = 0
+	bw_count = 0
+	for k in np.sort(_map.keys()):
+		fw_map[k] = {x:(i,fw_count+i) for i,x in enumerate(_map[k])}
+		bw_map[k] = {x:(i,bw_count+i) for i,x in enumerate(_map[k])}
+		fw_count += len(_map[k])
+		bw_count += len(_map[k])
+
 	return (fw_map, bw_map)
