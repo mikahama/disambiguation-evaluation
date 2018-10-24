@@ -39,10 +39,27 @@ def spmf_format_to_file(sentences, file_path):
 	f.write(spmf_format_sentences(sentences))
 	f.close()
 
+def __parse_spmf_line(line):
+	line = line.replace("\n", "")
+	numbers, score = line.split(" -1 #SUP: ")
+	patterns = numbers.split(" -1 ")
+	s = []
+	for pattern in patterns:
+		parts = pattern.split(" ")
+		parts = tuple(map(int, parts))
+		s.append(parts)
+	return tuple(s), score
+
+
 def read_spmf_output(file_path):
 	f = open(file_path, "r")
+	ret_dict = {}
 	for line in f:
-		pass
+		key, score = __parse_spmf_line(line)
+		ret_dict[key] = score
+	return ret_dict
+
+
 
 def __disambiguate(sentence, lang="fin"):
 	#if type(sentence) == unicode:
@@ -165,8 +182,10 @@ if __name__ == '__main__':
 	"""
 	#UD_PATH = "ud/sme_giella-ud-train.conllu"
 	#fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_sme.npz")
-	sentences = [[[54, 34], [89,78]], [[0,8]]]
-	print spmf_format_sentences(sentences)
+	#sentences = [[[54, 34], [89,78]], [[0,8]]]
+	#print spmf_format_sentences(sentences)
+	#print __parse_spmf_line("2 3 -1 1 4 -1 #SUP: 2")
+	print read_spmf_output("test.txt")
 	#spmf_format_to_file(sentences, "test.txt")
 	#produce_tests()
 	#dict_to_json("bw_map_sme.json", bw_map)
