@@ -8,11 +8,12 @@ from common import *
 import random
 import codecs
 
+
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
 #mappings = json_load("fi_mappings.json")
 import json
 mappings = json.load(open("fi_mappings.json", "r"))
-poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct"]
+poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct", "Det", "Pcle"]
 
 
 def __spmf_format_sentence(sentence):
