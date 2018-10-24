@@ -32,13 +32,17 @@ def spmf_format_sentences(sentences):
 	output = []
 	for sentence in sentences:
 		output.append(__spmf_format_sentence(sentence))
-	return " -2\n".join(output)
+	return " -2\n".join(output) + " -2"
 
 def spmf_format_to_file(sentences, file_path):
 	f = open(file_path, "w")
 	f.write(spmf_format_sentences(sentences))
 	f.close()
 
+def read_spmf_output(file_path):
+	f = open(file_path, "r")
+	for line in f:
+		pass
 
 def __disambiguate(sentence, lang="fin"):
 	#if type(sentence) == unicode:
