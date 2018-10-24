@@ -15,6 +15,9 @@ mappings = json.load(open("fi_mappings.json", "r"))
 poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct"]
 
 
+def __spmf_format_sentence(sentence):
+	pass
+
 def __disambiguate(sentence):
 	#if type(sentence) == unicode:
 	#	sentence = sentence.encode('utf-8')
