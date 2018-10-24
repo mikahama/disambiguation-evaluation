@@ -48,7 +48,7 @@ def __parse_spmf_line(line):
 		parts = pattern.split(" ")
 		parts = tuple(map(int, parts))
 		s.append(parts)
-	return tuple(s), score
+	return tuple(s), int(score)
 
 
 def read_spmf_output(file_path):
