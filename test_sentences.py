@@ -54,7 +54,6 @@ def __parse_spmf_line(line):
 		s.append(parts)
 	return tuple(s), int(score)
 
-
 def read_spmf_output(file_path):
 	f = open(file_path, "r")
 	ret_dict = {}
@@ -62,6 +61,11 @@ def read_spmf_output(file_path):
 		key, score = __parse_spmf_line(line)
 		ret_dict[key] = score
 	return ret_dict
+
+def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar"):
+	spmf_format_to_file(ll, "tmp_spmf.txt")
+	call(["java", "-jar", spmf_path, "run", algorithm, "tmp_spmf.txt", "tmp_spmf_output.txt", str(min_sup)+"%"])
+	return read_spmf_output("tmp_spmf_output.txt")
 
 
 
@@ -195,4 +199,3 @@ if __name__ == '__main__':
 	#produce_tests()
 	#dict_to_json("bw_map_sme.json", bw_map)
 	#dict_to_json("fw_map_sme.json", fw_map)
-
