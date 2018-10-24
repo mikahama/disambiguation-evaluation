@@ -20,13 +20,10 @@ master_keys.sort()
 
 def __spmf_format_sentence(sent):
 	sentence = []
-	for word in sent:
+	for num_list in sent:
 		w = []
-		for key in master_keys:
-			if key in word:
-				w.append(str(word[key]))
-			else:
-				w.append("0")
+		for num in num_list:
+			w.append(str(num))
 		sentence.append(" ".join(w))
 	line = " -1 ".join(sentence)
 	return line
@@ -37,6 +34,10 @@ def spmf_format_sentences(sentences):
 		output.append(__spmf_format_sentence(sentence))
 	return " -2\n".join(output)
 
+def spmf_format_to_file(sentences, file_path):
+	f = open(file_path, "w")
+	f.write(spmf_format_sentences(sentences))
+	f.close()
 
 
 def __disambiguate(sentence, lang="fin"):
@@ -160,8 +161,9 @@ if __name__ == '__main__':
 	"""
 	#UD_PATH = "ud/sme_giella-ud-train.conllu"
 	#fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_sme.npz")
-	sentences = [[{"pos":"N", "Case": "Nom"}, {"pos": "A", "Number":"Sg"}], [{"pos":"Adv", "Mood":"Ind"}]]
+	sentences = [[[54, 34], [89,78]], [[0,8]]]
 	print spmf_format_sentences(sentences)
+	#spmf_format_to_file(sentences, "test.txt")
 	#produce_tests()
 	#dict_to_json("bw_map_sme.json", bw_map)
 	#dict_to_json("fw_map_sme.json", fw_map)
