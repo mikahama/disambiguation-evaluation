@@ -112,19 +112,22 @@ if __name__ == "__main__":
 	import os, json, codecs
 	from uralicNLP.ud_tools import UD_collection
 	from common import parse_feature_to_dict
-	from test_sentences import spmf_format_to_file, read_spmf_output
+	from test_sentences import spmf_format_to_file, read_spmf_output, run_spmf_full
 	import operator
 
 	ud = UD_collection(codecs.open("ud/fi-ud-test.conllu", encoding="utf-8"))
-	#ll = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
-	#spmf_format_to_file(ll, "test_spmf.txt")
+	X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
+	results = run_spmf_full(X)
 
+	"""
 	patt = [tt_ll(x) for x in read_spmf_output("test_spmf_output.txt").keys()]
 	patt = fill_gaps(patt, [999])
 
 	# add the sentence to be tested to patt
-	patt + UD_sentence_to_list(ud.sentences[0])
-	
+	patt += UD_sentence_to_list(ud.sentences[0])
+
+	run_spmf_full([patt])
+	"""
 
 
 
