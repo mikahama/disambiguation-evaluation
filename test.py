@@ -224,6 +224,8 @@ if __name__ == "__main__":
 		ALL_UD_PATHS, cache="master_map.npz", overwrite=True)
 	dict_to_json("fw_master_map.json", fw_map)
 	dict_to_json("bw_master_map.json", bw_map)
+	dict_to_py("fw_master_map.py", fw_map, "fw_map")
+	dict_to_py("bw_master_map.py", bw_map, "bw_map")
 
 	exit()
 

@@ -2,6 +2,8 @@ import os, json, codecs
 import numpy as np
 from uralicNLP.ud_tools import UD_collection
 from maps import ud_pos
+from proposition_map import props
+from fw_master_map import fw_map
 
 np.warnings.filterwarnings('ignore')
 
@@ -9,6 +11,19 @@ def parse_feature_to_dict(s):
 	if s == "_":
 		return {}
 	return {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
+
+def parse_feature(s):
+	if s == "_":
+		return []
+	return [tuple(_.split("=")) for _ in s.split("|")]
+
+def parse_node_to_dict(node):
+	d = parse_feature_to_dict(node.feats)
+	d["POS"] = ud_pos[node.xpostag]
+	return d
+
+def apply_forward_map_to_dict(d,fw_map,index=1):
+	return [fw_map[k][v][index] for k,v in d.items()]
 
 _partial_keys = ["Case", "Connegative", "VerbForm", "Mood", "Number", "Person", "Tense", "Voice"]
 
@@ -28,11 +43,12 @@ def dict_to_json(filepath, d):
 	with open(filepath, 'w') as fp:
 		json.dump(d, fp, indent=4, sort_keys=True)
 
-# will have to write a different parser for different conllu files probably
-def parse_feature(s):
-	if s == "_":
-		return []
-	return [tuple(_.split("=")) for _ in s.split("|")]
+def dict_to_py(filepath, d, name):
+	with open(filepath, 'w') as f:
+		f.write("import collections\n")
+		f.write("{} = collections.OrderedDict(".format(name))
+		json.dump(d, f, indent=4, sort_keys=True)
+		f.write(")")
 
 @cache_wrapper
 def UD_trees_to_mapping(input_filepaths, **kwargs):
@@ -70,3 +86,29 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 		bw_count += len(_map[k])
 
 	return (fw_map, bw_map)
+
+def UD_sentence_to_list(sentence):
+	tmp = sentence.find()
+	tmp.sort()
+	ds = [parse_node_to_dict(node) for node in tmp]
+	return [apply_forward_map_to_dict(b,fw_map) + [v for k,v in props.items() if k(a,b)] for a,b in zip([{}]+ds[:-1],ds)]
+
+
+if __name__ == "__main__":
+
+	import os, json, codecs
+	from uralicNLP.ud_tools import UD_collection
+	from common import parse_feature_to_dict
+	from test_sentences import spmf_format_to_file
+
+	ud = UD_collection(codecs.open("ud/fi-ud-test.conllu", encoding="utf-8"))
+	ll = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
+	spmf_format_to_file(ll, "test_spmf.txt")
+
+	
+
+
+
+
+
+#
