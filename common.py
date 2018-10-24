@@ -10,6 +10,11 @@ def parse_feature_to_dict(s):
 		return {}
 	return {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
 
+def parse_feature(s):
+	if s == "_":
+		return []
+	return [tuple(_.split("=")) for _ in s.split("|")]
+
 _partial_keys = ["Case", "Connegative", "VerbForm", "Mood", "Number", "Person", "Tense", "Voice"]
 
 def cache_wrapper(func):
@@ -28,11 +33,12 @@ def dict_to_json(filepath, d):
 	with open(filepath, 'w') as fp:
 		json.dump(d, fp, indent=4, sort_keys=True)
 
-# will have to write a different parser for different conllu files probably
-def parse_feature(s):
-	if s == "_":
-		return []
-	return [tuple(_.split("=")) for _ in s.split("|")]
+def dict_to_py(filepath, d, name):
+	with open(filepath, 'w') as f:
+		f.write("import collections\n")
+		f.write("{} = collections.OrderedDict(".format(name))
+		json.dump(d, f, indent=4, sort_keys=True)
+		f.write(")")
 
 @cache_wrapper
 def UD_trees_to_mapping(input_filepaths, **kwargs):
@@ -70,3 +76,8 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 		bw_count += len(_map[k])
 
 	return (fw_map, bw_map)
+
+def UD_sentence_to_list(sentence):
+	tmp = sentence.find()
+	tmp.sort()
+	return parse_features_to_dict(node) for node in tmp
