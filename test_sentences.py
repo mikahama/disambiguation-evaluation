@@ -15,16 +15,36 @@ import json
 mappings = json.load(open("fi_mappings.json", "r"))
 poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct", "Det", "Pcle"]
 
+master_keys = ["pos"] + mappings.keys()
+master_keys.sort()
 
-def __spmf_format_sentence(sentence):
-	pass
+def __spmf_format_sentence(sent):
+	sentence = []
+	for word in sent:
+		w = []
+		for key in master_keys:
+			if key in word:
+				w.append(str(word[key]))
+			else:
+				w.append("0")
+		sentence.append(" ".join(w))
+	line = " -1 ".join(sentence)
+	return line
 
-def __disambiguate(sentence):
+def spmf_format_sentences(sentences):
+	output = []
+	for sentence in sentences:
+		output.append(__spmf_format_sentence(sentence))
+	return " -2\n".join(output)
+
+
+
+def __disambiguate(sentence, lang="fin"):
 	#if type(sentence) == unicode:
 	#	sentence = sentence.encode('utf-8')
 	#tokens = word_tokenize(sentence)
 	#print tokens
-	cg = Cg3("fin")
+	cg = Cg3(lang)
 	return cg.disambiguate(sentence)
 
 def __parse_morphology(morphology):
@@ -116,8 +136,8 @@ def produce_tests():
 		quit()
 
 
-def get_readings(sentence):
-	disambiguations = __disambiguate(sentence)
+def get_readings(sentence, lang):
+	disambiguations = __disambiguate(sentence, lang)
 	results = []
 	for disambiguation in disambiguations:
 		possible_words = disambiguation[1]
@@ -140,7 +160,9 @@ if __name__ == '__main__':
 	"""
 	#UD_PATH = "ud/sme_giella-ud-train.conllu"
 	#fw_map, bw_map = UD_trees_to_mapping(UD_PATH, cache="test_sme.npz")
-	produce_tests()
+	sentences = [[{"pos":"N", "Case": "Nom"}, {"pos": "A", "Number":"Sg"}], [{"pos":"Adv", "Mood":"Ind"}]]
+	print spmf_format_sentences(sentences)
+	#produce_tests()
 	#dict_to_json("bw_map_sme.json", bw_map)
 	#dict_to_json("fw_map_sme.json", fw_map)
 
