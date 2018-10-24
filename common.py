@@ -36,6 +36,8 @@ def parse_feature(s):
 @cache_wrapper
 def UD_trees_to_mapping(input_filepaths, **kwargs):
 
+	# now this will also include pos tags
+
 	if not isinstance(input_filepaths, list):
 		input_filepaths = [input_filepaths]
 
@@ -50,6 +52,10 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 						_map[type] = [value]
 					else:
 						_map[type] += [value]
+				if not "POS" in _map:
+					_map["POS"] = [node.xpostag]
+				else:
+					_map["POS"] += [node.xpostag]
 
 	_map = {k:np.unique(v) for k,v in _map.items()}
 	fw_map = {k:{x:i for i,x in enumerate(v)} for k,v in _map.items()}
