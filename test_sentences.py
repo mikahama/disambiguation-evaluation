@@ -77,9 +77,9 @@ def read_spmf_output(file_path):
 			tmp_sid_dict += [(key, sid)]
 	return collections.OrderedDict(tmp_score_dict), collections.OrderedDict(tmp_sid_dict) 
 
-def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1):
-	spmf_format_to_file(ll, "tmp_spmf.txt")
-	basic_call = ["java", "-jar", spmf_path, "run", algorithm, "tmp_spmf.txt", "tmp_spmf_output.txt", str(min_sup)+"%"]
+def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1, save_results_to="tmp_spmf_output.txt", temp_file="tmp_spmf.txt"):
+	spmf_format_to_file(ll, temp_file)
+	basic_call = ["java", "-jar", spmf_path, "run", algorithm, temp_file, save_results_to, str(min_sup)+"%"]
 	if algorithm == "MaxSP":
 		call(basic_call + ["false"])
 	elif algorithm in ["VMSP", "VGEN"]:
@@ -89,7 +89,7 @@ def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_p
 		call(basic_call + [str(max_pattern_length), "false"])
 	else:
 		call(basic_call)
-	return read_spmf_output("tmp_spmf_output.txt")
+	return read_spmf_output(save_results_to)
 
 
 
