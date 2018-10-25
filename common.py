@@ -6,7 +6,6 @@ from proposition_map import props
 from fw_master_map import fw_map
 import operator
 
-# TODO : fix the other languages to return empty list of dictionary at least
 # TODO : try transfer learning
 # TODO : try just learning on props
 # TODO : easy way to filter list of list
@@ -152,7 +151,7 @@ if __name__ == "__main__":
 
 	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
 	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]
-	result_dict = run_spmf_full(X, min_sup=10, algorithm="VMSP", max_pattern_length=20, max_gap=1)
+	result_dict, sid_dict = run_spmf_full(X, min_sup=10, algorithm="VMSP", max_pattern_length=20, max_gap=1)
 	#results = read_spmf_output("tmp_spmf_output.txt")
 	results = result_dict.keys()
 	print len(results)
