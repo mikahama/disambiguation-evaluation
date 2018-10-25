@@ -131,12 +131,11 @@ if __name__ == "__main__":
 	import itertools
 	from backward_map import bw_map
 
+	languages = {"fin":{"test":"ud/fi-ud-test.conllu", "train":"ud/fi-ud-train.conllu"}, "kpv":{"test":"ud/kpv_lattice-ud-test.conllu", "train":"ud/kpv_lattice-ud-test.conllu"}, "sme":{"test":"ud/sme_giella-ud-test.conllu", "train":"ud/sme_giella-ud-train.conllu"}, "myv":{"test":"ud/myv-ud.conllu", "train":"ud/myv-ud.conllu"}}
 	np.random.seed(1234)
 
-	UD_PATH = "ud/fi-ud-test.conllu"
-	#UD_PATH = "ud/sme_giella-ud-test.conllu"
-	#LANG = "sme"
-	LANG = "fin"
+	train_lang = "fin"
+	test_lang = "fin"
 	MAX_WINDOW = 3
 
 	# VMSP performs pretty well min_sup=5, max_pattern_length=20, max_gap=1
@@ -150,7 +149,7 @@ if __name__ == "__main__":
 	# 0 props (min_sup=5) ~= 23
 	# 0 props (min_sup=2) = 22.71 (22.56 with 20 instead of 10 choices)
 
-	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
+	ud = UD_collection(codecs.open(languages[train_lang]["train"], encoding="utf-8"))
 	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]
 	result_dict, sid_dict = run_spmf_full(X, min_sup=10, algorithm="VMSP", max_pattern_length=20, max_gap=1)
 	#results = read_spmf_output("tmp_spmf_output.txt")
@@ -183,10 +182,11 @@ if __name__ == "__main__":
 
 		return match_count
 
+	test_ud = UD_collection(codecs.open(languages[test_lang]["train"], encoding="utf-8"))
 	SCORE_FUNC = score_sentence
 	test_results = []
-	for sentence in ud.sentences:
-		all_readings = __give_all_possibilities(sentence, lang=LANG)
+	for sentence in test_ud.sentences:
+		all_readings = __give_all_possibilities(sentence, lang=test_lang)
 		all_encoded = [[apply_forward_map_to_dict(_,fw_map) for _ in word] for word in all_readings]
 
 		target = UD_sentence_to_list(sentence,w=MAX_WINDOW)
