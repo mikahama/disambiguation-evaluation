@@ -1,4 +1,4 @@
-import os, json, codecs
+import os, json, codecs, pickle
 import numpy as np
 from uralicNLP.ud_tools import UD_collection
 from maps import ud_pos
@@ -273,6 +273,7 @@ if __name__ == "__main__":
 	plt.xticks(np.linspace(0.,1.,11))
 
 	if save_plot:
+		pickle.dump(test_results, open('results/' + filename + ".pickle", "wb"))
 		plt.savefig('results/' + filename + ".png")
 	else:
 		plt.show()
