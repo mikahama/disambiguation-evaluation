@@ -1,10 +1,12 @@
-import os, json, codecs
+import os, json, codecs, pickle
 import numpy as np
 from uralicNLP.ud_tools import UD_collection
 from maps import ud_pos
 from proposition_map import props
 from fw_master_map import fw_map
 import operator
+import argparse
+from scoring import *
 
 # TODO : try transfer learning
 # TODO : try just learning on props
@@ -107,6 +109,19 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 
 	return (fw_map, bw_map)
 
+arg_parser = argparse.ArgumentParser(description='Run tests')
+def make_arg_parser():
+	arg_parser.add_argument('train_language',help='Language code for training')
+	arg_parser.add_argument('test_language',help='Language code for testing')
+	arg_parser.add_argument('--spmf-algorithm',help='SPMF algorithm to be used', default="VMSP")
+	arg_parser.add_argument('--min-sup',help='SPMF minimum support', type=int, default=10)
+	arg_parser.add_argument('--max-pattern-length',help='SPMF max pattern pattern length', type=int, default=20)
+	arg_parser.add_argument('--max-gap',help='SPMF max gap', type=int, default=1)
+	arg_parser.add_argument('--max-window',help='Max window', type=int, default=3)
+	arg_parser.add_argument('--save-results',help='Saves results to a file', type=bool, default=False)
+	arg_parser.add_argument('--scoring-method',help='Scoring method to be used', default="sentence")
+
+
 # return a full window of w items
 def full_window(x,w,blank={}):
 	x = list(x)
@@ -117,6 +132,17 @@ def UD_sentence_to_list(sentence,w=3):
 	tmp.sort()
 	ds = [parse_node_to_dict(node) for node in tmp]
 	return [apply_forward_map_to_dict(args[-1],fw_map) + [v for k,v in props.items() if k(*args)] for args in full_window(ds,w)]
+
+def __make_filename_from_args(args):
+	d = {}
+	for arg in vars(args):
+		d[arg]=  getattr(args, arg)
+	keys = list(d.keys())
+	keys.sort()
+	name_parts = []
+	for key in keys:
+		name_parts.append(str(d[key]))
+	return "_".join(name_parts)
 
 
 if __name__ == "__main__":
@@ -130,14 +156,34 @@ if __name__ == "__main__":
 	from test_sentences import get_readings, __change_ud_morphology, __give_all_possibilities
 	import itertools
 	from backward_map import bw_map
+	import sys
 
+	make_arg_parser()
+
+	languages = {"fin":{"test":"ud/fi-ud-test.conllu", "train":"ud/fi-ud-train.conllu"}, "kpv":{"test":"ud/kpv_lattice-ud-test.conllu", "train":"ud/kpv_lattice-ud-test.conllu"}, "sme":{"test":"ud/sme_giella-ud-test.conllu", "train":"ud/sme_giella-ud-train.conllu"}, "myv":{"test":"ud/myv-ud.conllu", "train":"ud/myv-ud.conllu"}}
+	
+	scoring_classes = {"sentence": ScoreSentence, "random":RandomScore}
 	np.random.seed(1234)
 
-	UD_PATH = "ud/fi-ud-test.conllu"
-	#UD_PATH = "ud/sme_giella-ud-test.conllu"
-	#LANG = "sme"
-	LANG = "fin"
+	train_lang = "fin"
+	test_lang = "sme"
 	MAX_WINDOW = 3
+
+	arg = sys.argv
+	args = arg_parser.parse_args()
+	save_plot = False
+	filename = __make_filename_from_args(args)
+	if len(arg)>1:
+		MAX_WINDOW = args.max_window
+		test_lang = args.test_language
+		train_lang = args.train_language
+		if args.save_results:
+			sys.stdout = codecs.open("results/" + filename + ".log", "w", encoding="utf-8")
+			save_plot = True
+	else:
+		print "No arguments, using variables"
+
+	
 
 	# VMSP performs pretty well min_sup=5, max_pattern_length=20, max_gap=1
 	# 120 props (min_sup=20) = 37.78
@@ -150,9 +196,9 @@ if __name__ == "__main__":
 	# 0 props (min_sup=5) ~= 23
 	# 0 props (min_sup=2) = 22.71 (22.56 with 20 instead of 10 choices)
 
-	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
+	ud = UD_collection(codecs.open(languages[train_lang]["train"], encoding="utf-8"))
 	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]
-	result_dict, sid_dict = run_spmf_full(X, min_sup=10, algorithm="VMSP", max_pattern_length=20, max_gap=1)
+	result_dict, sid_dict = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
 	#results = read_spmf_output("tmp_spmf_output.txt")
 	results = result_dict.keys()
 	print len(results)
@@ -168,25 +214,12 @@ if __name__ == "__main__":
 	# summarize the patterns using bw_map
 
 
-	def score_sentence(results, Y):
-		match_count = 0
-		for patt in results:
-			for i in range(len(Y) - len(patt)):
-				match = True
-				for j in range(len(patt)):
-					if not set(patt[j]).issubset(set(Y[i+j])):
-						match = False
-						break
-				if match:
-					match_count += result_dict[patt] # for counts
-					#match_count += 1 # for bool
+	test_ud = UD_collection(codecs.open(languages[test_lang]["test"], encoding="utf-8"))
+	SCORE_FUNC = scoring_classes[args.scoring_method]
 
-		return match_count
-
-	SCORE_FUNC = score_sentence
 	test_results = []
-	for sentence in ud.sentences:
-		all_readings = __give_all_possibilities(sentence, lang=LANG)
+	for sentence in test_ud.sentences:
+		all_readings = __give_all_possibilities(sentence, lang=test_lang)
 		all_encoded = [[apply_forward_map_to_dict(_,fw_map) for _ in word] for word in all_readings]
 
 		target = UD_sentence_to_list(sentence,w=MAX_WINDOW)
@@ -207,9 +240,11 @@ if __name__ == "__main__":
 				prop_vars = [[v for k,v in props.items() if k(*args)] for args in full_window(ds,MAX_WINDOW,blank={})]
 				reading = [a + b for a,b in zip(reading, prop_vars)]
 				if not reading == target:
-					wrong_scores += [SCORE_FUNC(results, reading)]
+					score_func = SCORE_FUNC(results, reading,result_dict)
+					wrong_scores += [score_func.score()]
 
-			target_score = SCORE_FUNC(results, target)
+			score_func = SCORE_FUNC(results, target,result_dict)
+			target_score = score_func.score()
 
 			if len(wrong_scores) > 0:
 				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
@@ -228,7 +263,12 @@ if __name__ == "__main__":
 
 	plt.plot(x_grid,y,color='tab:blue',alpha=0.75)
 	plt.xticks(np.linspace(0.,1.,11))
-	plt.show()
+
+	if save_plot:
+		pickle.dump(test_results, open('results/' + filename + ".pickle", "wb"))
+		plt.savefig('results/' + filename + ".png")
+	else:
+		plt.show()
 
 
 

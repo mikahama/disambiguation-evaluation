@@ -1,3 +1,5 @@
 *.npz
 *.pyc
 uralicNLP
+tmp_*
+results/tmp/*.txt
