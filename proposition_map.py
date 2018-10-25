@@ -1,67 +1,169 @@
 import numpy as np
 import collections
 from fw_master_map import fw_map
-from bw_master_map import bw_map
 
 map_begin = np.sum([len(v) for v in fw_map.values()])
 
-def keys_match(x,y,k):
-    return (k in x) and (k in y) and (x == y)
+def last_match(a,b,c,k):
+    return (k in b) and (k in c) and (b[k]==c[k])
 
-props = [
-    lambda x,y : keys_match(x,y,"Abbr"),
-    lambda x,y : keys_match(x,y,"AdpType"),
-    lambda x,y : keys_match(x,y,"AdvType"),
-    lambda x,y : keys_match(x,y,"Animacy"),
-    lambda x,y : keys_match(x,y,"Aspect"),
-    lambda x,y : keys_match(x,y,"Case"),
-    lambda x,y : keys_match(x,y,"Clitic"),
-    lambda x,y : keys_match(x,y,"Connegative"),
-    lambda x,y : keys_match(x,y,"Definite"),
-    lambda x,y : keys_match(x,y,"Degree"),
-    lambda x,y : keys_match(x,y,"Derivation"),
-    lambda x,y : keys_match(x,y,"Evident"),
-    lambda x,y : keys_match(x,y,"Foreign"),
-    lambda x,y : keys_match(x,y,"Gender"),
-    lambda x,y : keys_match(x,y,"InfForm"),
-    lambda x,y : keys_match(x,y,"Mood"),
-    lambda x,y : keys_match(x,y,"NameType"),
-    lambda x,y : keys_match(x,y,"NegationType"),
-    lambda x,y : keys_match(x,y,"NumType"),
-    lambda x,y : keys_match(x,y,"Number"),
-    lambda x,y : keys_match(x,y,"Number[obj]"),
-    lambda x,y : keys_match(x,y,"Number[psor]"),
-    lambda x,y : keys_match(x,y,"Number[subj]"),
-    lambda x,y : keys_match(x,y,"POS"),
-    lambda x,y : keys_match(x,y,"PartType"),
-    lambda x,y : keys_match(x,y,"Person"),
-    lambda x,y : keys_match(x,y,"Person[obj]"),
-    lambda x,y : keys_match(x,y,"Person[psor]"),
-    lambda x,y : keys_match(x,y,"Person[subj]"),
-    lambda x,y : keys_match(x,y,"Polarity"),
-    lambda x,y : keys_match(x,y,"PronType"),
-    lambda x,y : keys_match(x,y,"Reflex"),
-    lambda x,y : keys_match(x,y,"Style"),
-    lambda x,y : keys_match(x,y,"Tense"),
-    lambda x,y : keys_match(x,y,"Typo"),
-    lambda x,y : keys_match(x,y,"Valency"),
-    lambda x,y : keys_match(x,y,"Variant"),
-    lambda x,y : keys_match(x,y,"VerbForm"),
-    lambda x,y : keys_match(x,y,"VerbType"),
-    lambda x,y : keys_match(x,y,"Voice")
+def last_last_match(a,b,c,k):
+    return (k in a) and (k in c) and (a[k]==c[k])
+
+def all_match(a,b,c,k):
+    return (k in a) and (k in b) and (k in c) and (a[k]==b[k]) and (b[k]==c[k])
+
+props_list = [
+    lambda a,b,c : last_match(a,b,c,"Abbr"),
+    lambda a,b,c : last_match(a,b,c,"AdpType"),
+    lambda a,b,c : last_match(a,b,c,"AdvType"),
+    lambda a,b,c : last_match(a,b,c,"Animacy"),
+    lambda a,b,c : last_match(a,b,c,"Aspect"),
+    lambda a,b,c : last_match(a,b,c,"Case"),
+    lambda a,b,c : last_match(a,b,c,"Clitic"),
+    lambda a,b,c : last_match(a,b,c,"Connegative"),
+    lambda a,b,c : last_match(a,b,c,"Definite"),
+    lambda a,b,c : last_match(a,b,c,"Degree"),
+    lambda a,b,c : last_match(a,b,c,"Derivation"),
+    lambda a,b,c : last_match(a,b,c,"Evident"),
+    lambda a,b,c : last_match(a,b,c,"Foreign"),
+    lambda a,b,c : last_match(a,b,c,"Gender"),
+    lambda a,b,c : last_match(a,b,c,"InfForm"),
+    lambda a,b,c : last_match(a,b,c,"Mood"),
+    lambda a,b,c : last_match(a,b,c,"NameType"),
+    lambda a,b,c : last_match(a,b,c,"NegationType"),
+    lambda a,b,c : last_match(a,b,c,"NumType"),
+    lambda a,b,c : last_match(a,b,c,"Number"),
+    lambda a,b,c : last_match(a,b,c,"Number[obj]"),
+    lambda a,b,c : last_match(a,b,c,"Number[psor]"),
+    lambda a,b,c : last_match(a,b,c,"Number[subj]"),
+    lambda a,b,c : last_match(a,b,c,"POS"),
+    lambda a,b,c : last_match(a,b,c,"PartType"),
+    lambda a,b,c : last_match(a,b,c,"Person"),
+    lambda a,b,c : last_match(a,b,c,"Person[obj]"),
+    lambda a,b,c : last_match(a,b,c,"Person[psor]"),
+    lambda a,b,c : last_match(a,b,c,"Person[subj]"),
+    lambda a,b,c : last_match(a,b,c,"Polarity"),
+    lambda a,b,c : last_match(a,b,c,"PronType"),
+    lambda a,b,c : last_match(a,b,c,"Reflex"),
+    lambda a,b,c : last_match(a,b,c,"Style"),
+    lambda a,b,c : last_match(a,b,c,"Tense"),
+    lambda a,b,c : last_match(a,b,c,"Typo"),
+    lambda a,b,c : last_match(a,b,c,"Valency"),
+    lambda a,b,c : last_match(a,b,c,"Variant"),
+    lambda a,b,c : last_match(a,b,c,"VerbForm"),
+    lambda a,b,c : last_match(a,b,c,"VerbType"),
+    lambda a,b,c : last_match(a,b,c,"Voice"),
+
+    lambda a,b,c : last_last_match(a,b,c,"Abbr"),
+    lambda a,b,c : last_last_match(a,b,c,"AdpType"),
+    lambda a,b,c : last_last_match(a,b,c,"AdvType"),
+    lambda a,b,c : last_last_match(a,b,c,"Animacy"),
+    lambda a,b,c : last_last_match(a,b,c,"Aspect"),
+    lambda a,b,c : last_last_match(a,b,c,"Case"),
+    lambda a,b,c : last_last_match(a,b,c,"Clitic"),
+    lambda a,b,c : last_last_match(a,b,c,"Connegative"),
+    lambda a,b,c : last_last_match(a,b,c,"Definite"),
+    lambda a,b,c : last_last_match(a,b,c,"Degree"),
+    lambda a,b,c : last_last_match(a,b,c,"Derivation"),
+    lambda a,b,c : last_last_match(a,b,c,"Evident"),
+    lambda a,b,c : last_last_match(a,b,c,"Foreign"),
+    lambda a,b,c : last_last_match(a,b,c,"Gender"),
+    lambda a,b,c : last_last_match(a,b,c,"InfForm"),
+    lambda a,b,c : last_last_match(a,b,c,"Mood"),
+    lambda a,b,c : last_last_match(a,b,c,"NameType"),
+    lambda a,b,c : last_last_match(a,b,c,"NegationType"),
+    lambda a,b,c : last_last_match(a,b,c,"NumType"),
+    lambda a,b,c : last_last_match(a,b,c,"Number"),
+    lambda a,b,c : last_last_match(a,b,c,"Number[obj]"),
+    lambda a,b,c : last_last_match(a,b,c,"Number[psor]"),
+    lambda a,b,c : last_last_match(a,b,c,"Number[subj]"),
+    lambda a,b,c : last_last_match(a,b,c,"POS"),
+    lambda a,b,c : last_last_match(a,b,c,"PartType"),
+    lambda a,b,c : last_last_match(a,b,c,"Person"),
+    lambda a,b,c : last_last_match(a,b,c,"Person[obj]"),
+    lambda a,b,c : last_last_match(a,b,c,"Person[psor]"),
+    lambda a,b,c : last_last_match(a,b,c,"Person[subj]"),
+    lambda a,b,c : last_last_match(a,b,c,"Polarity"),
+    lambda a,b,c : last_last_match(a,b,c,"PronType"),
+    lambda a,b,c : last_last_match(a,b,c,"Reflex"),
+    lambda a,b,c : last_last_match(a,b,c,"Style"),
+    lambda a,b,c : last_last_match(a,b,c,"Tense"),
+    lambda a,b,c : last_last_match(a,b,c,"Typo"),
+    lambda a,b,c : last_last_match(a,b,c,"Valency"),
+    lambda a,b,c : last_last_match(a,b,c,"Variant"),
+    lambda a,b,c : last_last_match(a,b,c,"VerbForm"),
+    lambda a,b,c : last_last_match(a,b,c,"VerbType"),
+    lambda a,b,c : last_last_match(a,b,c,"Voice"),
+
+    lambda a,b,c : all_match(a,b,c,"Abbr"),
+    lambda a,b,c : all_match(a,b,c,"AdpType"),
+    lambda a,b,c : all_match(a,b,c,"AdvType"),
+    lambda a,b,c : all_match(a,b,c,"Animacy"),
+    lambda a,b,c : all_match(a,b,c,"Aspect"),
+    lambda a,b,c : all_match(a,b,c,"Case"),
+    lambda a,b,c : all_match(a,b,c,"Clitic"),
+    lambda a,b,c : all_match(a,b,c,"Connegative"),
+    lambda a,b,c : all_match(a,b,c,"Definite"),
+    lambda a,b,c : all_match(a,b,c,"Degree"),
+    lambda a,b,c : all_match(a,b,c,"Derivation"),
+    lambda a,b,c : all_match(a,b,c,"Evident"),
+    lambda a,b,c : all_match(a,b,c,"Foreign"),
+    lambda a,b,c : all_match(a,b,c,"Gender"),
+    lambda a,b,c : all_match(a,b,c,"InfForm"),
+    lambda a,b,c : all_match(a,b,c,"Mood"),
+    lambda a,b,c : all_match(a,b,c,"NameType"),
+    lambda a,b,c : all_match(a,b,c,"NegationType"),
+    lambda a,b,c : all_match(a,b,c,"NumType"),
+    lambda a,b,c : all_match(a,b,c,"Number"),
+    lambda a,b,c : all_match(a,b,c,"Number[obj]"),
+    lambda a,b,c : all_match(a,b,c,"Number[psor]"),
+    lambda a,b,c : all_match(a,b,c,"Number[subj]"),
+    lambda a,b,c : all_match(a,b,c,"POS"),
+    lambda a,b,c : all_match(a,b,c,"PartType"),
+    lambda a,b,c : all_match(a,b,c,"Person"),
+    lambda a,b,c : all_match(a,b,c,"Person[obj]"),
+    lambda a,b,c : all_match(a,b,c,"Person[psor]"),
+    lambda a,b,c : all_match(a,b,c,"Person[subj]"),
+    lambda a,b,c : all_match(a,b,c,"Polarity"),
+    lambda a,b,c : all_match(a,b,c,"PronType"),
+    lambda a,b,c : all_match(a,b,c,"Reflex"),
+    lambda a,b,c : all_match(a,b,c,"Style"),
+    lambda a,b,c : all_match(a,b,c,"Tense"),
+    lambda a,b,c : all_match(a,b,c,"Typo"),
+    lambda a,b,c : all_match(a,b,c,"Valency"),
+    lambda a,b,c : all_match(a,b,c,"Variant"),
+    lambda a,b,c : all_match(a,b,c,"VerbForm"),
+    lambda a,b,c : all_match(a,b,c,"VerbType"),
+    lambda a,b,c : all_match(a,b,c,"Voice"),
+
 ]
 
-props = collections.OrderedDict([(p,i+map_begin) for i,p in enumerate(props)])
+
+props_list = [
+    lambda a,b,c : last_match(a,b,c,"Case"),
+    lambda a,b,c : last_last_match(a,b,c,"Case"),
+    lambda a,b,c : all_match(a,b,c,"Case"),
+    lambda a,b,c : last_match(a,b,c,"Number"),
+    lambda a,b,c : last_last_match(a,b,c,"Number"),
+    lambda a,b,c : all_match(a,b,c,"Number"),
+]
+
+props_list = []
+
+print "THERE ARE {} PROPOSITIONAL VARIABLES".format(len(props_list))
+
+props = collections.OrderedDict([(p,i+map_begin) for i,p in enumerate(props_list)])
 
 if __name__ == "__main__":
 
     import os, json, codecs
     from uralicNLP.ud_tools import UD_collection
-    from common import parse_feature_to_dict
+    from common import parse_feature_to_dict, full_window
 
     ud = UD_collection(codecs.open("ud/fi-ud-test.conllu", encoding="utf-8"))
     for sentence in ud.sentences:
         X = [parse_feature_to_dict(node.feats) for node in sentence.find()]
 
-        for a,b in zip(X,X[1:]):
-            print [v for k,v in props.items() if  k(a,b)]
+        for args in full_window(X,3):
+            print [v for k,v in props.items() if  k(*args)]

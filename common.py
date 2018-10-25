@@ -6,6 +6,11 @@ from proposition_map import props
 from fw_master_map import fw_map
 import operator
 
+# TODO : fix the other languages to return empty list of dictionary at least
+# TODO : try transfer learning
+# TODO : try just learning on props
+# TODO : easy way to filter list of list
+
 np.warnings.filterwarnings('ignore')
 
 def parse_feature_to_dict(s):
@@ -102,11 +107,16 @@ def UD_trees_to_mapping(input_filepaths, **kwargs):
 
 	return (fw_map, bw_map)
 
-def UD_sentence_to_list(sentence):
+# return a full window of w items
+def full_window(x,w,blank={}):
+	x = list(x)
+	return zip(*[[{}]*i + (x[:-i] if i > 0 else x) for i in range(w-1,-1,-1)])
+
+def UD_sentence_to_list(sentence,w=3):
 	tmp = sentence.find()
 	tmp.sort()
 	ds = [parse_node_to_dict(node) for node in tmp]
-	return [apply_forward_map_to_dict(b,fw_map) + [v for k,v in props.items() if k(a,b)] for a,b in zip([{}]+ds[:-1],ds)]
+	return [apply_forward_map_to_dict(args[-1],fw_map) + [v for k,v in props.items() if k(*args)] for args in full_window(ds,w)]
 
 
 if __name__ == "__main__":
@@ -119,6 +129,7 @@ if __name__ == "__main__":
 	from tqdm import tqdm
 	from test_sentences import get_readings, __change_ud_morphology, __give_all_possibilities
 	import itertools
+	from backward_map import bw_map
 
 	np.random.seed(1234)
 
@@ -126,14 +137,26 @@ if __name__ == "__main__":
 	#UD_PATH = "ud/sme_giella-ud-test.conllu"
 	#LANG = "sme"
 	LANG = "fin"
+	MAX_WINDOW = 3
+
+	# VMSP performs pretty well min_sup=5, max_pattern_length=20, max_gap=1
+	# 120 props (min_sup=20) = 37.78
+	# 6 props (min_sup=20) = 35.75
+	# 2 props (min_sup=20) = 34.44
+	# 0 props (min_sup=20) = 33.89
+	# 0 props (min_sup=5) ~= 23
+	# 0 props (min_sup=2) = 22.71
 
 	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
-	X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
-	results = run_spmf_full(X, min_sup=25, algorithm="MaxSP")
-	#results = [_ for _ in results.keys() if len(_) <= 2 and np.sum([len(__) for __ in _]) <= 2]
-
+	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]
+	results = run_spmf_full(X, min_sup=2, algorithm="VMSP", max_pattern_length=20, max_gap=1)
 	results = results.keys()
 	print len(results)
+
+	# how many patterns include a propositional variable?
+
+	# summarize the patterns using bw_map
+
 
 	def score_sentence(results, Y):
 		match_count = 0
@@ -155,19 +178,23 @@ if __name__ == "__main__":
 		all_readings = __give_all_possibilities(sentence, lang=LANG)
 		all_encoded = [[apply_forward_map_to_dict(_,fw_map) for _ in word] for word in all_readings]
 
-		target = UD_sentence_to_list(sentence)
+		target = UD_sentence_to_list(sentence,w=MAX_WINDOW)
 
 		N = np.product([len(_) for _ in all_encoded])
 		#print [len(_) for _ in all_encoded]
 		if N < 1000 and N > 0:
 			all_poss = list(itertools.product(*all_encoded))
+			all_poss_read = list(itertools.product(*all_readings))
 			subset = np.random.choice(
 				np.arange(len(all_poss)),
 				size=(min(10,len(all_poss)),),
 				replace=False)
 			subset_poss = [all_poss[i] for i in subset]
+			subset_poss_read = [all_poss_read[i] for i in subset]
 			wrong_scores = []
-			for reading in subset_poss:
+			for reading, ds in zip(subset_poss, subset_poss_read):
+				prop_vars = [[v for k,v in props.items() if k(*args)] for args in full_window(ds,MAX_WINDOW,blank={})]
+				reading = [a + b for a,b in zip(reading, prop_vars)]
 				if not reading == target:
 					wrong_scores += [SCORE_FUNC(results, reading)]
 

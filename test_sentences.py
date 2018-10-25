@@ -48,7 +48,10 @@ def __parse_spmf_line(line):
 	line = line.replace("\n", "")
 	# replace possible multiple spaces to single to prevent parsing from failing
 	line = " ".join(line.split())
-	numbers, score = line.split(" -1 #SUP: ")
+	try:
+		numbers, score = line.split(" -1 #SUP: ")
+	except:
+		return None
 	patterns = numbers.split("-1")
 	s = []
 	for pattern in patterns:
@@ -61,13 +64,24 @@ def read_spmf_output(file_path):
 	f = open(file_path, "r")
 	ret_dict = {}
 	for line in f:
-		key, score = __parse_spmf_line(line)
-		ret_dict[key] = score
+		_out = __parse_spmf_line(line)
+		if _out is not None:
+			key, score = _out
+			ret_dict[key] = score
 	return ret_dict
 
-def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar"):
+def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1):
 	spmf_format_to_file(ll, "tmp_spmf.txt")
-	call(["java", "-jar", spmf_path, "run", algorithm, "tmp_spmf.txt", "tmp_spmf_output.txt", str(min_sup)+"%"])
+	basic_call = ["java", "-jar", spmf_path, "run", algorithm, "tmp_spmf.txt", "tmp_spmf_output.txt", str(min_sup)+"%"]
+	if algorithm == "MaxSP":
+		call(basic_call + ["false"])
+	elif algorithm in ["VMSP", "VGEN"]:
+		# NOTE the max gap param seems to have no effect for VMSP
+		call(basic_call + [str(max_pattern_length), str(max_gap), "false"])
+	elif algorithm in ["FEAT", "FSGP"]:
+		call(basic_call + [str(max_pattern_length), "false"])
+	else:
+		call(basic_call)
 	return read_spmf_output("tmp_spmf_output.txt")
 
 
