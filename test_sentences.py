@@ -174,6 +174,8 @@ def __give_all_possibilities(ud_sentence, lang="fin"):
 	for node in nodes:
 		fst_output = uralicApi.analyze(node.form.encode('utf-8'), lang)
 		forms = __parse_fst_morphologies(fst_output)
+		if len(forms) == 0:
+			forms.append({})
 		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
 	return sent
 
