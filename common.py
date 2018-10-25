@@ -6,6 +6,7 @@ from proposition_map import props
 from fw_master_map import fw_map
 import operator
 import argparse
+from scoring import *
 
 # TODO : try transfer learning
 # TODO : try just learning on props
@@ -118,6 +119,7 @@ def make_arg_parser():
 	arg_parser.add_argument('--max-gap',help='SPMF max gap', type=int, default=1)
 	arg_parser.add_argument('--max-window',help='Max window', type=int, default=3)
 	arg_parser.add_argument('--save-results',help='Saves results to a file', type=bool, default=False)
+	arg_parser.add_argument('--scoring-method',help='Scoring method to be used', default="sentence")
 
 
 # return a full window of w items
@@ -159,6 +161,8 @@ if __name__ == "__main__":
 	make_arg_parser()
 
 	languages = {"fin":{"test":"ud/fi-ud-test.conllu", "train":"ud/fi-ud-train.conllu"}, "kpv":{"test":"ud/kpv_lattice-ud-test.conllu", "train":"ud/kpv_lattice-ud-test.conllu"}, "sme":{"test":"ud/sme_giella-ud-test.conllu", "train":"ud/sme_giella-ud-train.conllu"}, "myv":{"test":"ud/myv-ud.conllu", "train":"ud/myv-ud.conllu"}}
+	
+	scoring_classes = {"sentence": ScoreSentence}
 	np.random.seed(1234)
 
 	train_lang = "fin"
@@ -210,23 +214,8 @@ if __name__ == "__main__":
 	# summarize the patterns using bw_map
 
 
-	def score_sentence(results, Y):
-		match_count = 0
-		for patt in results:
-			for i in range(len(Y) - len(patt)):
-				match = True
-				for j in range(len(patt)):
-					if not set(patt[j]).issubset(set(Y[i+j])):
-						match = False
-						break
-				if match:
-					match_count += result_dict[patt] # for counts
-					#match_count += 1 # for bool
-
-		return match_count
-
 	test_ud = UD_collection(codecs.open(languages[test_lang]["test"], encoding="utf-8"))
-	SCORE_FUNC = score_sentence
+	SCORE_FUNC = scoring_classes[args.scoring_method]
 	test_results = []
 	for sentence in test_ud.sentences:
 		all_readings = __give_all_possibilities(sentence, lang=test_lang)
@@ -250,9 +239,11 @@ if __name__ == "__main__":
 				prop_vars = [[v for k,v in props.items() if k(*args)] for args in full_window(ds,MAX_WINDOW,blank={})]
 				reading = [a + b for a,b in zip(reading, prop_vars)]
 				if not reading == target:
-					wrong_scores += [SCORE_FUNC(results, reading)]
+					score_func = SCORE_FUNC(results, reading,result_dict)
+					wrong_scores += [score_func.score()]
 
-			target_score = SCORE_FUNC(results, target)
+			score_func = SCORE_FUNC(results, target,result_dict)
+			target_score = score_func.score()
 
 			if len(wrong_scores) > 0:
 				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
