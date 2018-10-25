@@ -8,13 +8,13 @@ ud_pos = {
    "Aux":"V",
    "C":"CC",
    "CC":"CC",
-   "CLB":"CLB",
+   "CLB":"X",
    "CS":"CC",
-   "Cmp/Hyph":"Cmp/Hyph",
+   "Cmp/Hyph":"X",
    "Cop":"V",
    "Det":"Det",
    "Foreign":"Foreign",
-   "Hyph":"Hyph",
+   "Hyph":"X",
    "Interj":"Interj",
    "N":"N",
    "N*":"N",
@@ -37,5 +37,5 @@ ud_pos = {
    "V*":"V",
    "VERB":"V",
    "X":"X",
-   "_":"_"
+   "_":"X"
 }
