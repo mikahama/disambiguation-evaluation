@@ -14,12 +14,16 @@ def print_txt_file(fp):
     call(["cat", fp])
 
 X = [[[4,5], [3], [6], [4,5], [7], [6]]]
-print_dict( run_spmf_full(
-    X, min_sup=0, algorithm="VMSP", max_pattern_length=3, max_gap=1) )
+score_dict, sid_dict = run_spmf_full(
+    X, min_sup=0, algorithm="VMSP", max_pattern_length=3, max_gap=1)
 
 print_txt_file("tmp_spmf_output.txt")
+print_dict(score_dict)
+print_dict(sid_dict)
 
-print_dict( run_spmf_full(
-    X, min_sup=0, algorithm="VMSP", max_pattern_length=3, max_gap=2) )
+score_dict, sid_dict = run_spmf_full(
+    X, min_sup=0, algorithm="VMSP", max_pattern_length=3, max_gap=2)
 
 print_txt_file("tmp_spmf_output.txt")
+print_dict(score_dict)
+print_dict(sid_dict)

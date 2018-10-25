@@ -148,7 +148,7 @@ if __name__ == "__main__":
 	# 0 props (min_sup=10) = 26.79
 	# 0 props (min_sup=10,count_data) = 25.71
 	# 0 props (min_sup=5) ~= 23
-	# 0 props (min_sup=2) = 22.71
+	# 0 props (min_sup=2) = 22.71 (22.56 with 20 instead of 10 choices)
 
 	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
 	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]

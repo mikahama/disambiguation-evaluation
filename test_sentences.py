@@ -50,7 +50,13 @@ def __parse_spmf_line(line):
 	# replace possible multiple spaces to single to prevent parsing from failing
 	line = " ".join(line.split())
 	try:
-		numbers, score = line.split(" -1 #SUP: ")
+		if "#SID:" in line:
+			numbers, score_and_sid = line.split(" -1 #SUP: ")
+			score, sid = score_and_sid.split(" #SID: ")
+			sid = list(map(int, sid.split()))
+		else:
+			numbers, score = line.split(" -1 #SUP: ")
+			sid = []
 	except:
 		return None
 	patterns = numbers.split("-1")
@@ -59,17 +65,19 @@ def __parse_spmf_line(line):
 		parts = pattern.split()
 		parts = tuple(map(int, parts))
 		s.append(parts)
-	return tuple(s), int(score)
+	return tuple(s), int(score), sid
 
 def read_spmf_output(file_path):
 	f = open(file_path, "r")
-	tmp = []
+	tmp_score_dict = []
+	tmp_sid_dict = []
 	for line in f:
 		_out = __parse_spmf_line(line)
 		if _out is not None:
-			key, score = _out
-			tmp += [(key, score)]
-	return collections.OrderedDict(tmp)
+			key, score, sid = _out
+			tmp_score_dict += [(key, score)]
+			tmp_sid_dict += [(key, sid)]
+	return collections.OrderedDict(tmp_score_dict), collections.OrderedDict(tmp_sid_dict) 
 
 def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1):
 	spmf_format_to_file(ll, "tmp_spmf.txt")
@@ -78,7 +86,7 @@ def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_p
 		call(basic_call + ["false"])
 	elif algorithm in ["VMSP", "VGEN"]:
 		# NOTE the max gap param seems to have no effect for VMSP
-		call(basic_call + [str(max_pattern_length), str(max_gap), "false"])
+		call(basic_call + [str(max_pattern_length), str(max_gap), "true"])
 	elif algorithm in ["FEAT", "FSGP"]:
 		call(basic_call + [str(max_pattern_length), "false"])
 	else:
