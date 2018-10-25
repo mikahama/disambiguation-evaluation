@@ -41,7 +41,8 @@ def fill_gaps(ll,x):
 
 def apply_forward_map_to_dict(d,fw_map,index=1):
 	#print d
-	d["POS"] = ud_pos[d["POS"]]
+	if "POS" in d:
+		d["POS"] = ud_pos[d["POS"]]
 	return [fw_map[k][v][index] for k,v in d.items()]
 
 _partial_keys = ["Case", "Connegative", "VerbForm", "Mood", "Number", "Person", "Tense", "Voice"]
