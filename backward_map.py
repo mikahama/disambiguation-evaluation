@@ -11,11 +11,11 @@ bw_map = {}
 # basic bw_map
 for k,v in fw_map.items():
     for kk,vv in v.items():
-        bw_map[int(vv[1])] = "{}={}".format(k,kk)
+        bw_map[int(vv[1])] = (k,kk)
 
 # add propositions
 for k,v in props.items():
-    bw_map[int(v)] = func_to_string(k)
+    bw_map[int(v)] = ("prop", func_to_string(k))
 
 
 #

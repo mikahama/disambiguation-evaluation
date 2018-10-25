@@ -3,7 +3,6 @@ from uralicNLP.cg3 import Cg3
 from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
-#from mikatools import *
 from common import *
 import random
 import codecs
@@ -13,7 +12,6 @@ import collections
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
-#mappings = json_load("fi_mappings.json")
 import json
 mappings = json.load(open("fi_mappings.json", "r"))
 poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct", "Det", "Pcle"]
@@ -176,6 +174,8 @@ def __give_all_possibilities(ud_sentence, lang="fin"):
 	for node in nodes:
 		fst_output = uralicApi.analyze(node.form.encode('utf-8'), lang)
 		forms = __parse_fst_morphologies(fst_output)
+		if len(forms) == 0:
+			forms.append({})
 		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
 	return sent
 
