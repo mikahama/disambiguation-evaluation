@@ -36,6 +36,8 @@ def fill_gaps(ll,x):
 	return reduce(operator.add, nl)
 
 def apply_forward_map_to_dict(d,fw_map,index=1):
+	#print d
+	d["POS"] = ud_pos[d["POS"]]
 	return [fw_map[k][v][index] for k,v in d.items()]
 
 _partial_keys = ["Case", "Connegative", "VerbForm", "Mood", "Number", "Person", "Tense", "Voice"]
@@ -114,21 +116,81 @@ if __name__ == "__main__":
 	from common import parse_feature_to_dict
 	from test_sentences import spmf_format_to_file, read_spmf_output, run_spmf_full
 	import operator
+	from tqdm import tqdm
+	from test_sentences import get_readings, __change_ud_morphology, __give_all_possibilities
+	import itertools
 
-	ud = UD_collection(codecs.open("ud/fi-ud-test.conllu", encoding="utf-8"))
+	np.random.seed(1234)
+
+	UD_PATH = "ud/fi-ud-test.conllu"
+	#UD_PATH = "ud/sme_giella-ud-test.conllu"
+	#LANG = "sme"
+	LANG = "fin"
+
+	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
 	X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
-	results = run_spmf_full(X)
+	results = run_spmf_full(X, min_sup=25, algorithm="MaxSP")
+	#results = [_ for _ in results.keys() if len(_) <= 2 and np.sum([len(__) for __ in _]) <= 2]
 
-	"""
-	patt = [tt_ll(x) for x in read_spmf_output("test_spmf_output.txt").keys()]
-	patt = fill_gaps(patt, [999])
+	results = results.keys()
+	print len(results)
 
-	# add the sentence to be tested to patt
-	patt += UD_sentence_to_list(ud.sentences[0])
+	def score_sentence(results, Y):
+		match_count = 0
+		for patt in results:
+			for i in range(len(Y) - len(patt)):
+				match = True
+				for j in range(len(patt)):
+					if not set(patt[j]).issubset(set(Y[i+j])):
+						match = False
+						break
+				if match:
+					match_count += 1
 
-	run_spmf_full([patt])
-	"""
+		return match_count
 
+	SCORE_FUNC = score_sentence
+	test_results = []
+	for sentence in ud.sentences:
+		all_readings = __give_all_possibilities(sentence, lang=LANG)
+		all_encoded = [[apply_forward_map_to_dict(_,fw_map) for _ in word] for word in all_readings]
+
+		target = UD_sentence_to_list(sentence)
+
+		N = np.product([len(_) for _ in all_encoded])
+		#print [len(_) for _ in all_encoded]
+		if N < 1000 and N > 0:
+			all_poss = list(itertools.product(*all_encoded))
+			subset = np.random.choice(
+				np.arange(len(all_poss)),
+				size=(min(10,len(all_poss)),),
+				replace=False)
+			subset_poss = [all_poss[i] for i in subset]
+			wrong_scores = []
+			for reading in subset_poss:
+				if not reading == target:
+					wrong_scores += [SCORE_FUNC(results, reading)]
+
+			target_score = SCORE_FUNC(results, target)
+
+			if len(wrong_scores) > 0:
+				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
+
+				print np.mean(test_results)
+
+	from matplotlib import pyplot as plt
+	from scipy.stats import gaussian_kde
+	x = np.asarray(test_results)
+	x_grid = np.linspace(0.,1.,1000)
+	bandwidth=0.01
+	kde = gaussian_kde(x, bw_method=bandwidth / x.std(ddof=1))
+	y = kde.evaluate(x_grid)
+	y /= np.sum(y)
+	y = np.cumsum(y)
+
+	plt.plot(x_grid,y,color='tab:blue',alpha=0.75)
+	plt.xticks(np.linspace(0.,1.,11))
+	plt.show()
 
 
 

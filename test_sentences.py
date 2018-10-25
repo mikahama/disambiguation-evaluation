@@ -8,6 +8,7 @@ from common import *
 import random
 import codecs
 from subprocess import call
+from maps import ud_pos
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
@@ -16,7 +17,7 @@ import json
 mappings = json.load(open("fi_mappings.json", "r"))
 poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct", "Det", "Pcle"]
 
-master_keys = ["pos"] + mappings.keys()
+master_keys = ["POS"] + mappings.keys()
 master_keys.sort()
 
 def run_spmf(algorithm, input_file, output_file, min_sup=50, spmf_path="spmf.jar"):
@@ -45,11 +46,13 @@ def spmf_format_to_file(sentences, file_path):
 
 def __parse_spmf_line(line):
 	line = line.replace("\n", "")
+	# replace possible multiple spaces to single to prevent parsing from failing
+	line = " ".join(line.split())
 	numbers, score = line.split(" -1 #SUP: ")
-	patterns = numbers.split(" -1 ")
+	patterns = numbers.split("-1")
 	s = []
 	for pattern in patterns:
-		parts = pattern.split(" ")
+		parts = pattern.split()
 		parts = tuple(map(int, parts))
 		s.append(parts)
 	return tuple(s), int(score)
@@ -84,17 +87,17 @@ def __parse_morphology(morphology):
 	for pos in poses:
 		if pos in morphology:
 			if pos == "CS" or pos == "CC":
-				reading["pos"] = "C"
+				reading["POS"] = "C"
 				break
 			elif pos == "Pr" or pos == "Po":
-				reading["pos"] = "Adp"
+				reading["POS"] = "Adp"
 				break
 			else:
-				reading["pos"] = pos
+				reading["POS"] = pos
 				break
-	if "pos" not in reading:
-		reading["pos"] = ""
-	reading["pos"] = unicode(reading["pos"])
+	if "POS" not in reading:
+		reading["POS"] = ""
+	reading["POS"] = unicode(reading["POS"])
 	for mapping, map_dict in mappings.iteritems():
 		for item in map_dict:
 			if item in morphology:
@@ -108,7 +111,7 @@ def __parse_fst_morphologies(morphology_list):
 		m = morphology[0].replace("@@","+").replace("@","+")
 		m = m.split("+")[1:]
 		morph = __parse_morphology(m)
-		if len(morph["pos"]) != 0:
+		if len(morph["POS"]) != 0:
 			output.append(morph)
 	return output
 
@@ -125,7 +128,7 @@ def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 	for i in range(len(nodes)):
 		node = nodes[i]
 		morphology = parse_feature_to_dict(node.feats)
-		morphology["pos"] = node.xpostag
+		morphology["POS"] = node.xpostag
 		if i in replace:
 			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), lang))
 			was_changed = False
@@ -139,7 +142,7 @@ def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 				if was_changed:
 					break
 			if not was_changed:
-				morphology["pos"] = unicode(random.choice(poses))
+				morphology["POS"] = unicode(random.choice(poses))
 		sent.append(morphology)
 	return sent
 
