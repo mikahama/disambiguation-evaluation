@@ -9,6 +9,7 @@ import random
 import codecs
 from subprocess import call
 from maps import ud_pos
+import collections
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
@@ -62,13 +63,13 @@ def __parse_spmf_line(line):
 
 def read_spmf_output(file_path):
 	f = open(file_path, "r")
-	ret_dict = {}
+	tmp = []
 	for line in f:
 		_out = __parse_spmf_line(line)
 		if _out is not None:
 			key, score = _out
-			ret_dict[key] = score
-	return ret_dict
+			tmp += [(key, score)]
+	return collections.OrderedDict(tmp)
 
 def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1):
 	spmf_format_to_file(ll, "tmp_spmf.txt")

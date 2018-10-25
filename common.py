@@ -144,14 +144,24 @@ if __name__ == "__main__":
 	# 6 props (min_sup=20) = 35.75
 	# 2 props (min_sup=20) = 34.44
 	# 0 props (min_sup=20) = 33.89
+	# 0 props (min_sup=20,count_data) = 32.54
+	# 0 props (min_sup=10) = 26.79
+	# 0 props (min_sup=10,count_data) = 25.71
 	# 0 props (min_sup=5) ~= 23
 	# 0 props (min_sup=2) = 22.71
 
 	ud = UD_collection(codecs.open(UD_PATH, encoding="utf-8"))
 	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]
-	results = run_spmf_full(X, min_sup=2, algorithm="VMSP", max_pattern_length=20, max_gap=1)
-	results = results.keys()
+	result_dict = run_spmf_full(X, min_sup=10, algorithm="VMSP", max_pattern_length=20, max_gap=1)
+	#results = read_spmf_output("tmp_spmf_output.txt")
+	results = result_dict.keys()
 	print len(results)
+
+	# how many variables does the longest pattern contain
+	nested_len = lambda x : np.sum([len(_) for _ in x])
+	pattern_lengths = np.asarray([nested_len(_) for _ in results])
+	print "MAX PATTERN LENGTH : {}".format(np.max(pattern_lengths))
+	print "MEAN PATTERN LENGTH : {}".format(np.mean(pattern_lengths))
 
 	# how many patterns include a propositional variable?
 
@@ -168,7 +178,8 @@ if __name__ == "__main__":
 						match = False
 						break
 				if match:
-					match_count += 1
+					match_count += result_dict[patt] # for counts
+					#match_count += 1 # for bool
 
 		return match_count
 
