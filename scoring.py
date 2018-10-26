@@ -20,7 +20,7 @@ class ScoreSentence(Scoring):
 
 class ScoreSentenceByCounts(Scoring):
 	def __init__(self, *args, **kwargs):
-		super(ScoreSentence, self).__init__(*args)
+		super(ScoreSentenceByCounts, self).__init__(*args)
 
 	def score(self, x):
 		count = 0
