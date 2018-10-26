@@ -141,7 +141,7 @@ def __make_filename_from_args(args):
 	keys.sort()
 	name_parts = []
 	for key in keys:
-		name_parts.append(str(d[key]))
+		name_parts.append(str(d[key]).replace(" ","_"))
 	return "_".join(name_parts)
 
 
