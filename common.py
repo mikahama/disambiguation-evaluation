@@ -162,8 +162,13 @@ if __name__ == "__main__":
 
 	languages = {"fin":{"test":"ud/fi-ud-test.conllu", "train":"ud/fi-ud-train.conllu"}, "kpv":{"test":"ud/kpv_lattice-ud-test.conllu", "train":"ud/kpv_lattice-ud-test.conllu"}, "sme":{"test":"ud/sme_giella-ud-test.conllu", "train":"ud/sme_giella-ud-train.conllu"}, "myv":{"test":"ud/myv-ud.conllu", "train":"ud/myv-ud.conllu"}}
 
-	scoring_classes = {"sentence": ScoreSentence, "random":RandomScore}
-	np.random.seed(1234)
+	scoring_classes = {
+		"sentence": ScoreSentence,
+		"random":RandomScore,
+		"gap" : ScoreSentenceByGapFreq,
+	}
+
+	np.random.seed(678901234)
 
 	train_lang = "fin"
 	test_lang = "sme"
@@ -203,7 +208,8 @@ if __name__ == "__main__":
 	res.calculate_stats()
 
 	test_ud = UD_collection(codecs.open(languages[test_lang]["test"], encoding="utf-8"))
-	SCORE_FUNC = scoring_classes[args.scoring_method](res)
+	SCORE_FUNC = scoring_classes[args.scoring_method](
+		res, data=X, max_gap=args.max_gap, min_value=0.25, max_value=1.)
 
 	test_results = []
 	for sentence in test_ud.sentences:
