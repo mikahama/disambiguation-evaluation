@@ -8,6 +8,7 @@ from combinatorics import unlabeled_balls_in_labeled_boxes
 from fw_master_map import fw_map
 from backward_map import bw_map
 from maps import ud_pos
+from tqdm import tqdm
 
 def parse_feature_to_dict(s):
 	if s == "_":
@@ -157,7 +158,7 @@ class Results(object):
 
 	def extend(self, results_object):
 		self.score_dict.update(results_object.score_dict)
-		self.sid_dict.update(results_object.score_dict)
+		self.sid_dict.update(results_object.sid_dict)
 		self.patterns = self.sid_dict.map_keys_to_list(IntListList)
 		self.gap_distributions = None
 		self.dep_scores = None
@@ -182,7 +183,7 @@ class Results(object):
 	def calculate_gap_distributions(self,X,max_gap=1,min_value=0.,max_value=1.):
 		if self.gap_distributions is None:
 			gds = []
-			for k,v in self.sid_dict.items():
+			for k,v in tqdm(self.sid_dict.items()):
 				gd = self.calculate_gap_distribution(
 					X,IntListList(k),v,max_gap=max_gap)
 				gds += [(k,gd)]

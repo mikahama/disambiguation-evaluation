@@ -145,6 +145,7 @@ if __name__ == "__main__":
 
 	scoring_classes = {
 		"sentence": ScoreSentence,
+		"count" : ScoreSentenceByCounts,
 		"random":RandomScore,
 		"gap" : ScoreSentenceByGapFreq,
 		"dep" : ScoreSentenceByDependencies,
@@ -189,6 +190,7 @@ if __name__ == "__main__":
 		X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
 
 		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
+
 		new_res.calculate_stats()
 		res.extend(new_res)
 
