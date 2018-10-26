@@ -18,6 +18,25 @@ class ScoreSentence(Scoring):
 			count += int(x.contains(pattern))
 		return count
 
+class ScoreSentenceByGapFreq(Scoring):
+	"""docstring for ScoreSentenceByGapFreq"""
+	def __init__(self, res, data=None, max_gap=1, min_value=0., max_value=1.):
+		assert data is not None
+		self.max_gap = max_gap
+		res.calculate_gap_distributions(
+			data, max_gap=max_gap, min_value=min_value, max_value=max_value)
+		#for k,v in res.gap_distributions.items():
+		#	print k,v
+		super(ScoreSentenceByGapFreq, self).__init__(res)
+
+	def score(self,x):
+		count = 0
+		for p in self.results.patterns:
+			for gc, gp in p.all_gapped_versions(max_gap=self.max_gap).items():
+				if x.contains(gp):
+					count += self.results.gap_distributions[p.to_tuple()][gc]
+		return count
+
 class RandomScore(Scoring):
 	"""docstring for ScoreSentence"""
 	def __init__(self, *args):
