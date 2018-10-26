@@ -127,6 +127,12 @@ class Results(object):
 		self.patterns = self.sid_dict.map_keys_to_list(IntListList)
 		self.gap_distributions = None
 
+	def extend(self, results_object):
+		self.score_dict.update(results_object.score_dict)
+		self.sid_dict.update(results_object.score_dict)
+		self.patterns = self.sid_dict.map_keys_to_list(IntListList)
+		self.gap_distributions = None
+
 	def calculate_stats(self):
 		pattern_lengths = self.score_dict.map_keys_to_list(
 			lambda x : IntListList(x).nested_len())
