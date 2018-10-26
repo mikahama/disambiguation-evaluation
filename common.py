@@ -113,8 +113,6 @@ def full_window(x,w,blank={}):
 	x = list(x)
 	return zip(*[[{}]*i + (x[:-i] if i > 0 else x) for i in range(w-1,-1,-1)])
 
-
-
 def __make_filename_from_args(args):
 	d = {}
 	for arg in vars(args):
@@ -201,8 +199,17 @@ if __name__ == "__main__":
 		res, data=X, UD=train_ud, max_gap=args.max_gap, min_value=0.25, max_value=1.)
 
 	test_results = []
-	for sentence in test_ud.sentences:
-		all_readings = __give_all_possibilities(sentence, lang=test_lang)
+
+	# TEST 1 : compare 
+
+
+	# TEST 2 : compare all readings (possible or from disambiguator) and make
+	# sure that the target is scored highest
+	mean = 0
+	pbar = tqdm(test_ud.sentences)
+	for sentence in pbar:
+		#all_readings = __give_all_possibilities(sentence, lang=test_lang)
+		all_readings = get_readings(sentence, lang=test_lang)
 		all_encoded = [IntListList(DictList(*word)) for word in all_readings]
 
 		target = UD_sentence_to_list(sentence)
@@ -220,7 +227,8 @@ if __name__ == "__main__":
 
 			wrong_scores = []
 			for reading in subset_poss:
-				if not reading == target:
+				#if not reading == target:
+				if reading.intersection(target) < 0.95:
 					wrong_scores += [SCORE_FUNC.score(reading)]
 
 			target_score = SCORE_FUNC.score(target)
@@ -228,7 +236,9 @@ if __name__ == "__main__":
 			if len(wrong_scores) > 0:
 				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
 
-				print np.mean(test_results)
+				mean = np.mean(test_results)
+
+		pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde

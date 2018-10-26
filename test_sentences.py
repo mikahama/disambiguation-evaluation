@@ -92,14 +92,11 @@ def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_p
 		call(basic_call)
 	return read_spmf_output(save_results_to)
 
-
-
-def __disambiguate(sentence, lang="fin"):
-	#if type(sentence) == unicode:
-	#	sentence = sentence.encode('utf-8')
-	#tokens = word_tokenize(sentence)
-	#print tokens
+def __disambiguate(udsentence, lang="fin"):
+	tmp = udsentence.find()
+	tmp.sort()
 	cg = Cg3(lang)
+	sentence = [x.form.encode('utf-8') for x in tmp]
 	return cg.disambiguate(sentence)
 
 def __parse_morphology(morphology):
@@ -118,7 +115,7 @@ def __parse_morphology(morphology):
 				reading["POS"] = pos
 				break
 	if "POS" not in reading:
-		reading["POS"] = ""
+		reading["POS"] = "X"
 	reading["POS"] = unicode(reading["POS"])
 	for mapping, map_dict in mappings.iteritems():
 		for item in map_dict:

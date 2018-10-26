@@ -68,6 +68,14 @@ class IntListList(list):
 	def nested_len(self):
 		return int(np.sum([len(_) for _ in self]))
 
+	def intersection(self,x):
+		# measures the intersection of two IntListList
+		x = IntListList(x)
+		inter = 0
+		for i in range(min(len(self), len(x))):
+			inter += len(set(self[i]).intersection(set(x[i])))
+		return float(inter) / float(max(self.nested_len(),x.nested_len()))
+
 	def contains(self,x,verbose=False,return_count=True):
 		# does the IntListList contain x
 		# contains_pattern([[3, 5], [3], [4, 6, 7]], [[3, 5], [], [6]]) == True
@@ -206,8 +214,6 @@ class Results(object):
 					mapping = {}
 					for node in tmp:
 						mapping[node.id] = len(mapping)
-
-					#print np.sort(mapping.values()), len(sentence)
 
 					for node in tmp:
 						for child in node.children:
