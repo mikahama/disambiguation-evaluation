@@ -219,7 +219,7 @@ if __name__ == "__main__":
 			# choose a subset to speed up testing
 			subset = np.random.choice(
 				np.arange(len(all_poss)),
-				size=(min(10,len(all_poss)),),
+				size=(min(20,len(all_poss)),),
 				replace=False)
 			subset_poss = [all_poss[i] for i in subset]
 

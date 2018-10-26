@@ -19,7 +19,7 @@ ud_pos = {
    "N":"N",
    "N*":"N",
    "Num":"Num",
-   "PART":"Part",
+   "PART":"X",
    "PRON":"Pron",
    "PROPN":"N",
    "PUNCT":"Punct",
