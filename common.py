@@ -15,21 +15,6 @@ from custom_types import *
 
 np.warnings.filterwarnings('ignore')
 
-def parse_feature_to_dict(s):
-	if s == "_":
-		return {}
-	return {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
-
-def parse_feature(s):
-	if s == "_":
-		return []
-	return [tuple(_.split("=")) for _ in s.split("|")]
-
-def parse_node_to_dict(node):
-	d = parse_feature_to_dict(node.feats)
-	d["POS"] = ud_pos[node.xpostag]
-	return d
-
 # tuple of tuple to list of list
 def tt_ll(tt):
 	return [[_ for _ in t] for t in tt]
@@ -146,7 +131,6 @@ if __name__ == "__main__":
 
 	import os, json, codecs
 	from uralicNLP.ud_tools import UD_collection
-	from common import parse_feature_to_dict
 	from test_sentences import spmf_format_to_file, read_spmf_output, run_spmf_full
 	import operator
 	from tqdm import tqdm

@@ -9,6 +9,21 @@ from fw_master_map import fw_map
 from backward_map import bw_map
 from maps import ud_pos
 
+def parse_feature_to_dict(s):
+	if s == "_":
+		return {}
+	return {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
+
+def parse_feature(s):
+	if s == "_":
+		return []
+	return [tuple(_.split("=")) for _ in s.split("|")]
+
+def parse_node_to_dict(node):
+	d = parse_feature_to_dict(node.feats)
+	d["POS"] = ud_pos[node.xpostag]
+	return d
+
 def UD_sentence_to_list(sentence):
 	tmp = sentence.find()
 	tmp.sort()
@@ -184,7 +199,7 @@ class Results(object):
 				for udsentence, sentence in zip(ud.sentences, data):
 					tmp = [node for node in udsentence.find(match_empty_nodes = True)]
 					tmp.sort()
-					sentence = UD_sentence_to_list(tmp)
+					sentence = UD_sentence_to_list(udsentence)
 					mapping = {}
 					for node in tmp:
 						mapping[node.id] = len(mapping)
