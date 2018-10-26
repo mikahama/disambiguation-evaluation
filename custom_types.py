@@ -176,7 +176,7 @@ class Results(object):
 			dep_data = []
 			for ud in UD:
 				for udsentence, sentence in zip(ud.sentences, data):
-					tmp = [node for node in udsentence.find()]
+					tmp = [node for node in udsentence.find(match_empty_nodes = True)]
 					tmp.sort()
 					mapping = {}
 					for node in tmp:
