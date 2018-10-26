@@ -9,6 +9,11 @@ from fw_master_map import fw_map
 from backward_map import bw_map
 from maps import ud_pos
 
+def UD_sentence_to_list(sentence):
+	tmp = sentence.find()
+	tmp.sort()
+	return IntListList(DictList(*[parse_node_to_dict(node) for node in tmp]))
+
 class DictList(list):
 	def __init__(self,*args):
 		if len(args) == 1: # then we could be casting
@@ -172,12 +177,14 @@ class Results(object):
 
 	def calculate_dependency_scores(self,data,UD,min_value=0.,max_value=1.):
 		# make data into dependencies
+		# data unused now
 		if self.dep_scores is None:
 			dep_data = []
 			for ud in UD:
 				for udsentence, sentence in zip(ud.sentences, data):
 					tmp = [node for node in udsentence.find(match_empty_nodes = True)]
 					tmp.sort()
+					sentence = UD_sentence_to_list(tmp)
 					mapping = {}
 					for node in tmp:
 						mapping[node.id] = len(mapping)
