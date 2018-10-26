@@ -64,6 +64,12 @@ class IntListList(list):
 			print "{} does NOT contain {}".format(X,pattern)
 		return False
 
+	def contains_and_length_match(self,x,verbose=False):
+		# does the IntListList contain x and match the length
+		if len(self)==len(x) and self.contains(x,verbose=verbose):
+			return True
+		return False
+
 	def insert_gaps(self,sizes):
 		# insert x which could be an item or a list
 		assert len(sizes) == (len(self)-1)
@@ -126,12 +132,14 @@ class Results(object):
 		self.sid_dict = sid_dict
 		self.patterns = self.sid_dict.map_keys_to_list(IntListList)
 		self.gap_distributions = None
+		self.dep_scores = None
 
 	def extend(self, results_object):
 		self.score_dict.update(results_object.score_dict)
 		self.sid_dict.update(results_object.score_dict)
 		self.patterns = self.sid_dict.map_keys_to_list(IntListList)
 		self.gap_distributions = None
+		self.dep_scores = None
 
 	def calculate_stats(self):
 		pattern_lengths = self.score_dict.map_keys_to_list(
@@ -157,9 +165,43 @@ class Results(object):
 				gd = self.calculate_gap_distribution(
 					X,IntListList(k),v,max_gap=max_gap)
 				gds += [(k,gd)]
-			gds = ResultDict(gds).map_vals(lambda x : x.norm_vals())
+			gds = ResultDict(gds).map_vals(lambda x : x.norm_vals(
+				min_value=min_value, max_value=max_value))
 			self.gap_distributions = gds
 		return self.gap_distributions
+
+	def calculate_dependency_scores(self,data,UD,min_value=0.,max_value=1.):
+		# make data into dependencies
+		if self.dep_scores is None:
+			dep_data = []
+			for ud in UD:
+				for udsentence, sentence in zip(ud.sentences, data):
+					tmp = [node for node in udsentence.find()]
+					tmp.sort()
+					mapping = {}
+					for node in tmp:
+						mapping[node.id] = len(mapping)
+
+					for node in tmp:
+						for child in node.children:
+							deps = [mapping[node.id], mapping[child.node.id]]
+							dep_data += [IntListList(
+								[sentence[i] for i in deps])]
+
+			dep_scores = []
+			for pattern in self.patterns:
+				count = int(np.sum([dep.contains_and_length_match(pattern) for dep in dep_data]))
+				dep_scores += [(pattern.to_tuple(), count)]
+
+			self.dep_scores = ResultDict(dep_scores).norm_vals(
+				min_value=min_value, max_value=max_value)
+
+		return self.dep_scores
+
+
+
+
+
 
 
 if __name__ == "__main__":

@@ -166,6 +166,7 @@ if __name__ == "__main__":
 		"sentence": ScoreSentence,
 		"random":RandomScore,
 		"gap" : ScoreSentenceByGapFreq,
+		"dep" : ScoreSentenceByDependencies,
 	}
 
 	np.random.seed(678901234)
@@ -204,8 +205,10 @@ if __name__ == "__main__":
 	train_langs = train_lang.split(" ")
 
 	res = Results(ResultDict(),ResultDict())
+	train_ud = []
 	for train_lang in train_langs:
 		ud = UD_collection(codecs.open(languages[train_lang]["train"], encoding="utf-8"))
+		train_ud += [ud]
 		X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
 
 		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
@@ -213,8 +216,10 @@ if __name__ == "__main__":
 		res.extend(new_res)
 
 	test_ud = UD_collection(codecs.open(languages[test_lang]["test"], encoding="utf-8"))
+
+
 	SCORE_FUNC = scoring_classes[args.scoring_method](
-		res, data=X, max_gap=args.max_gap, min_value=0.25, max_value=1.)
+		res, data=X, UD=train_ud, max_gap=args.max_gap, min_value=0.25, max_value=1.)
 
 	test_results = []
 	for sentence in test_ud.sentences:
