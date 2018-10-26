@@ -128,10 +128,7 @@ def full_window(x,w,blank={}):
 	x = list(x)
 	return zip(*[[{}]*i + (x[:-i] if i > 0 else x) for i in range(w-1,-1,-1)])
 
-def UD_sentence_to_list(sentence):
-	tmp = sentence.find()
-	tmp.sort()
-	return IntListList(DictList(*[parse_node_to_dict(node) for node in tmp]))
+
 
 def __make_filename_from_args(args):
 	d = {}
