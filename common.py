@@ -201,11 +201,16 @@ if __name__ == "__main__":
 	# 0 props (min_sup=5) ~= 23
 	# 0 props (min_sup=2) = 22.71 (22.56 with 20 instead of 10 choices)
 
-	ud = UD_collection(codecs.open(languages[train_lang]["train"], encoding="utf-8"))
-	X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
+	train_langs = train_lang.split(" ")
 
-	res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
-	res.calculate_stats()
+	res = Results(ResultDict(),ResultDict())
+	for train_lang in train_langs:
+		ud = UD_collection(codecs.open(languages[train_lang]["train"], encoding="utf-8"))
+		X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
+
+		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
+		new_res.calculate_stats()
+		res.extend(new_res)
 
 	test_ud = UD_collection(codecs.open(languages[test_lang]["test"], encoding="utf-8"))
 	SCORE_FUNC = scoring_classes[args.scoring_method](
