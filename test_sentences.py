@@ -9,6 +9,7 @@ import codecs
 from subprocess import call
 from maps import ud_pos
 import collections
+from custom_types import *
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
@@ -67,15 +68,15 @@ def __parse_spmf_line(line):
 
 def read_spmf_output(file_path):
 	f = open(file_path, "r")
-	tmp_score_dict = []
-	tmp_sid_dict = []
+	score_dict = []
+	sid_dict = []
 	for line in f:
 		_out = __parse_spmf_line(line)
 		if _out is not None:
 			key, score, sid = _out
-			tmp_score_dict += [(key, score)]
-			tmp_sid_dict += [(key, sid)]
-	return collections.OrderedDict(tmp_score_dict), collections.OrderedDict(tmp_sid_dict) 
+			score_dict += [(key, score)]
+			sid_dict += [(key, sid)]
+	return Results(ResultDict(score_dict), ResultDict(sid_dict))
 
 def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1, save_results_to="tmp_spmf_output.txt", temp_file="tmp_spmf.txt"):
 	spmf_format_to_file(ll, temp_file)
@@ -219,7 +220,7 @@ if __name__ == '__main__':
 	#sentences = [[[54, 34], [89,78]], [[0,8]]]
 	#print spmf_format_sentences(sentences)
 	#print __parse_spmf_line("2 3 -1 1 4 -1 #SUP: 2")
-	print read_spmf_output("test.txt")
+	#print read_spmf_output("test.txt")
 	#run_spmf("SPADE", "test_spmf.txt", "test_spmf_out.txt")
 	#spmf_format_to_file(sentences, "test.txt")
 	#produce_tests()

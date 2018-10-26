@@ -7,6 +7,7 @@ from fw_master_map import fw_map
 import operator
 import argparse
 from scoring import *
+from custom_types import *
 
 # TODO : try transfer learning
 # TODO : try just learning on props
@@ -127,11 +128,10 @@ def full_window(x,w,blank={}):
 	x = list(x)
 	return zip(*[[{}]*i + (x[:-i] if i > 0 else x) for i in range(w-1,-1,-1)])
 
-def UD_sentence_to_list(sentence,w=3):
+def UD_sentence_to_list(sentence):
 	tmp = sentence.find()
 	tmp.sort()
-	ds = [parse_node_to_dict(node) for node in tmp]
-	return [apply_forward_map_to_dict(args[-1],fw_map) + [v for k,v in props.items() if k(*args)] for args in full_window(ds,w)]
+	return IntListList(DictList(*[parse_node_to_dict(node) for node in tmp]))
 
 def __make_filename_from_args(args):
 	d = {}
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 	make_arg_parser()
 
 	languages = {"fin":{"test":"ud/fi-ud-test.conllu", "train":"ud/fi-ud-train.conllu"}, "kpv":{"test":"ud/kpv_lattice-ud-test.conllu", "train":"ud/kpv_lattice-ud-test.conllu"}, "sme":{"test":"ud/sme_giella-ud-test.conllu", "train":"ud/sme_giella-ud-train.conllu"}, "myv":{"test":"ud/myv-ud.conllu", "train":"ud/myv-ud.conllu"}}
-	
+
 	scoring_classes = {"sentence": ScoreSentence, "random":RandomScore}
 	np.random.seed(1234)
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
 	else:
 		print "No arguments, using variables"
 
-	
+
 
 	# VMSP performs pretty well min_sup=5, max_pattern_length=20, max_gap=1
 	# 120 props (min_sup=20) = 37.78
@@ -197,54 +197,38 @@ if __name__ == "__main__":
 	# 0 props (min_sup=2) = 22.71 (22.56 with 20 instead of 10 choices)
 
 	ud = UD_collection(codecs.open(languages[train_lang]["train"], encoding="utf-8"))
-	X = [UD_sentence_to_list(sentence,w=MAX_WINDOW) for sentence in ud.sentences]
-	result_dict, sid_dict = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
-	#results = read_spmf_output("tmp_spmf_output.txt")
-	results = result_dict.keys()
-	print len(results)
+	X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
 
-	# how many variables does the longest pattern contain
-	nested_len = lambda x : np.sum([len(_) for _ in x])
-	pattern_lengths = np.asarray([nested_len(_) for _ in results])
-	print "MAX PATTERN LENGTH : {}".format(np.max(pattern_lengths))
-	print "MEAN PATTERN LENGTH : {}".format(np.mean(pattern_lengths))
-
-	# how many patterns include a propositional variable?
-
-	# summarize the patterns using bw_map
-
+	res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
+	res.calculate_stats()
 
 	test_ud = UD_collection(codecs.open(languages[test_lang]["test"], encoding="utf-8"))
-	SCORE_FUNC = scoring_classes[args.scoring_method]
+	SCORE_FUNC = scoring_classes[args.scoring_method](res)
 
 	test_results = []
 	for sentence in test_ud.sentences:
 		all_readings = __give_all_possibilities(sentence, lang=test_lang)
-		all_encoded = [[apply_forward_map_to_dict(_,fw_map) for _ in word] for word in all_readings]
+		all_encoded = [IntListList(DictList(*word)) for word in all_readings]
 
-		target = UD_sentence_to_list(sentence,w=MAX_WINDOW)
+		target = UD_sentence_to_list(sentence)
 
 		N = np.product([len(_) for _ in all_encoded])
-		#print [len(_) for _ in all_encoded]
 		if N < 1000 and N > 0:
-			all_poss = list(itertools.product(*all_encoded))
-			all_poss_read = list(itertools.product(*all_readings))
+			all_poss = list(map(lambda x : IntListList(x), itertools.product(*all_encoded)))
+
+			# choose a subset to speed up testing
 			subset = np.random.choice(
 				np.arange(len(all_poss)),
 				size=(min(10,len(all_poss)),),
 				replace=False)
 			subset_poss = [all_poss[i] for i in subset]
-			subset_poss_read = [all_poss_read[i] for i in subset]
-			wrong_scores = []
-			for reading, ds in zip(subset_poss, subset_poss_read):
-				prop_vars = [[v for k,v in props.items() if k(*args)] for args in full_window(ds,MAX_WINDOW,blank={})]
-				reading = [a + b for a,b in zip(reading, prop_vars)]
-				if not reading == target:
-					score_func = SCORE_FUNC(results, reading,result_dict)
-					wrong_scores += [score_func.score()]
 
-			score_func = SCORE_FUNC(results, target,result_dict)
-			target_score = score_func.score()
+			wrong_scores = []
+			for reading in subset_poss:
+				if not reading == target:
+					wrong_scores += [SCORE_FUNC.score(reading)]
+
+			target_score = SCORE_FUNC.score(target)
 
 			if len(wrong_scores) > 0:
 				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]

@@ -1,33 +1,23 @@
 import random
+from custom_types import *
 
 class Scoring(object):
 	"""docstring for Scoring"""
-	def __init__(self, results, Y, result_dict):
+	def __init__(self, results):
+		assert isinstance(results, Results)
 		self.results = results
-		self.Y = Y
-		self.result_dict = result_dict
-
 
 class ScoreSentence(Scoring):
 	"""docstring for ScoreSentence"""
 	def __init__(self, *args):
 		super(ScoreSentence, self).__init__(*args)
 
-	def score(self):
-		match_count = 0
-		for patt in self.results:
-			for i in range(len(self.Y) - len(patt)):
-				match = True
-				for j in range(len(patt)):
-					if not set(patt[j]).issubset(set(self.Y[i+j])):
-						match = False
-						break
-				if match:
-					match_count += self.result_dict[patt] # for counts
-					#match_count += 1 # for bool
+	def score(self, x):
+		count = 0
+		for pattern in self.results.patterns:
+			count += int(x.contains(pattern))
+		return count
 
-		return match_count
-		
 class RandomScore(Scoring):
 	"""docstring for ScoreSentence"""
 	def __init__(self, *args):
