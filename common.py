@@ -152,10 +152,6 @@ if __name__ == "__main__":
 
 	np.random.seed(678901234)
 
-	train_lang = "fin"
-	test_lang = "sme"
-	MAX_WINDOW = 3
-
 	arg = sys.argv
 	args = arg_parser.parse_args()
 	save_plot = False

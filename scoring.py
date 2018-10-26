@@ -15,7 +15,17 @@ class ScoreSentence(Scoring):
 	def score(self, x):
 		count = 0
 		for pattern in self.results.patterns:
-			count += int(x.contains(pattern))
+			count += x.contains(pattern)
+		return count
+
+class ScoreSentenceByCounts(Scoring):
+	def __init__(self, *args, **kwargs):
+		super(ScoreSentence, self).__init__(*args)
+
+	def score(self, x):
+		count = 0
+		for pattern,score in self.results.score_dict.items():
+			count += (score * x.contains(pattern))
 		return count
 
 class ScoreSentenceByGapFreq(Scoring):
@@ -33,8 +43,8 @@ class ScoreSentenceByGapFreq(Scoring):
 		count = 0
 		for p in self.results.patterns:
 			for gc, gp in p.all_gapped_versions(max_gap=self.max_gap).items():
-				if x.contains(gp):
-					count += self.results.gap_distributions[p.to_tuple()][gc]
+				n = x.contains(gp)
+				count += (self.results.gap_distributions[p.to_tuple()][gc] * n)
 		return count
 
 class ScoreSentenceByDependencies(Scoring):
@@ -48,8 +58,7 @@ class ScoreSentenceByDependencies(Scoring):
 	def score(self, x):
 		count = 0
 		for k,v in self.results.dep_scores.items():
-			if x.contains(k):
-				count += v
+			count += (v * x.contains(k))
 		return count
 
 class RandomScore(Scoring):

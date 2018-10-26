@@ -24,8 +24,8 @@ def parse_node_to_dict(node):
 	d["POS"] = ud_pos[node.xpostag]
 	return d
 
-def UD_sentence_to_list(sentence):
-	tmp = sentence.find()
+def UD_sentence_to_list(sentence, match_empty_nodes=False):
+	tmp = sentence.find(match_empty_nodes=match_empty_nodes)
 	tmp.sort()
 	return IntListList(DictList(*[parse_node_to_dict(node) for node in tmp]))
 
@@ -67,22 +67,23 @@ class IntListList(list):
 	def nested_len(self):
 		return int(np.sum([len(_) for _ in self]))
 
-	def contains(self,x,verbose=False):
+	def contains(self,x,verbose=False,return_count=True):
 		# does the IntListList contain x
 		# contains_pattern([[3, 5], [3], [4, 6, 7]], [[3, 5], [], [6]]) == True
 		# contains_pattern([[3, 5], [3], [4, 6, 7]], [[4,5], [], []]) == False
 		x = IntListList(x)
+		count = 0
 		for i in range(len(self)-len(x)+1):
 			j = 0
 			while j < len(x) and i+j < len(self) and set(x[j]).issubset(set(self[i+j])):
 				j += 1
 			if j == len(x):
-				if verbose:
-					print "{} contains {}".format(X,pattern)
-				return True
-		if verbose:
-			print "{} does NOT contain {}".format(X,pattern)
-		return False
+				if not return_count:
+					return True
+				count += 1
+		if not return_count:
+			return False
+		return count
 
 	def contains_and_length_match(self,x,verbose=False):
 		# does the IntListList contain x and match the length
@@ -199,10 +200,13 @@ class Results(object):
 				for udsentence, sentence in zip(ud.sentences, data):
 					tmp = [node for node in udsentence.find(match_empty_nodes = True)]
 					tmp.sort()
-					sentence = UD_sentence_to_list(udsentence)
+					sentence = UD_sentence_to_list(
+						udsentence, match_empty_nodes=True)
 					mapping = {}
 					for node in tmp:
 						mapping[node.id] = len(mapping)
+
+					#print np.sort(mapping.values()), len(sentence)
 
 					for node in tmp:
 						for child in node.children:
