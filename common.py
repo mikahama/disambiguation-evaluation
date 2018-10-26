@@ -100,6 +100,8 @@ def make_arg_parser():
 	arg_parser.add_argument('train_language',help='Language code for training')
 	arg_parser.add_argument('test_language',help='Language code for testing')
 	arg_parser.add_argument('--spmf-algorithm',help='SPMF algorithm to be used', default="VMSP")
+	arg_parser.add_argument('--test', help='an integer 1 or 2', type=int, default=1)
+	arg_parser.add_argument('--n-changes', help='the number of changes in TEST 1', type=int, default=1)
 	arg_parser.add_argument('--min-sup',help='SPMF minimum support', type=int, default=10)
 	arg_parser.add_argument('--max-pattern-length',help='SPMF max pattern pattern length', type=int, default=20)
 	arg_parser.add_argument('--max-gap',help='SPMF max gap', type=int, default=1)
@@ -200,45 +202,62 @@ if __name__ == "__main__":
 
 	test_results = []
 
-	# TEST 1 : compare 
+	if args.test == 1:
+		# TEST 1 : compare simple manipulation against the original target
+		mean = 0
+		pbar = tqdm(test_ud.sentences)
+		for sentence in pbar:
+			wrong_reading = __change_ud_morphology(
+				sentence, args.n_changes, lang=test_lang)
+			wrong_encoded = IntListList(DictList(*wrong_reading))
+			target = UD_sentence_to_list(sentence)
 
-
-	# TEST 2 : compare all readings (possible or from disambiguator) and make
-	# sure that the target is scored highest
-	mean = 0
-	pbar = tqdm(test_ud.sentences)
-	for sentence in pbar:
-		#all_readings = __give_all_possibilities(sentence, lang=test_lang)
-		all_readings = get_readings(sentence, lang=test_lang)
-		all_encoded = [IntListList(DictList(*word)) for word in all_readings]
-
-		target = UD_sentence_to_list(sentence)
-
-		N = np.product([len(_) for _ in all_encoded])
-		if N < 1000 and N > 0:
-			all_poss = list(map(lambda x : IntListList(x), itertools.product(*all_encoded)))
-
-			# choose a subset to speed up testing
-			subset = np.random.choice(
-				np.arange(len(all_poss)),
-				size=(min(20,len(all_poss)),),
-				replace=False)
-			subset_poss = [all_poss[i] for i in subset]
-
-			wrong_scores = []
-			for reading in subset_poss:
-				#if not reading == target:
-				if reading.intersection(target) < 0.95:
-					wrong_scores += [SCORE_FUNC.score(reading)]
-
+			wrong_score = SCORE_FUNC.score(wrong_encoded)
 			target_score = SCORE_FUNC.score(target)
 
-			if len(wrong_scores) > 0:
-				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
-
+			if target.intersection(wrong_encoded) < 0.95:
+				test_results += [target_score > wrong_score]
 				mean = np.mean(test_results)
+				
+			pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
 
-		pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
+	elif args.test == 2:
+		# TEST 2 : compare all readings (possible or from disambiguator)
+		# sure that the target is scored highest
+		mean = 0
+		pbar = tqdm(test_ud.sentences)
+		for sentence in pbar:
+			#all_readings = __give_all_possibilities(sentence, lang=test_lang)
+			all_readings = get_readings(sentence, lang=test_lang)
+			all_encoded = [IntListList(DictList(*word)) for word in all_readings]
+
+			target = UD_sentence_to_list(sentence)
+
+			N = np.product([len(_) for _ in all_encoded])
+			if N < 1000 and N > 0:
+				all_poss = list(map(lambda x : IntListList(x), itertools.product(*all_encoded)))
+
+				# choose a subset to speed up testing
+				subset = np.random.choice(
+					np.arange(len(all_poss)),
+					size=(min(20,len(all_poss)),),
+					replace=False)
+				subset_poss = [all_poss[i] for i in subset]
+
+				wrong_scores = []
+				for reading in subset_poss:
+					#if not reading == target:
+					if reading.intersection(target) < 0.95:
+						wrong_scores += [SCORE_FUNC.score(reading)]
+
+				target_score = SCORE_FUNC.score(target)
+
+				if len(wrong_scores) > 0:
+					test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
+
+					mean = np.mean(test_results)
+
+			pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde

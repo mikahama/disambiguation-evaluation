@@ -10,6 +10,7 @@ from subprocess import call
 from maps import ud_pos
 import collections
 from custom_types import *
+from fw_master_map import fw_map
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
@@ -152,7 +153,7 @@ def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), lang))
 			was_changed = False
 			for replacement in replacements:
-				for k in _partial_keys:
+				for k in fw_map.keys():
 					if k in replacement:
 						if (k in morphology and replacement[k] != morphology[k]) or k not in morphology:
 							morphology = replacement
