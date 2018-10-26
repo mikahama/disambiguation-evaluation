@@ -2,7 +2,7 @@ import itertools
 from subprocess import call
 
 train_langs = ["fin", "sme"]
-test_langs = ["fin", "sme", "kpv", "myv"]
+test_langs = ["myv"]
 min_support = ["5", "10", "20"]
 max_pattern = ["5", "20"]
 
