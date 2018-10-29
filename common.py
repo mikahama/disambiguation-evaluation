@@ -149,6 +149,7 @@ if __name__ == "__main__":
 		"random":RandomScore,
 		"gap" : ScoreSentenceByGapFreq,
 		"dep" : ScoreSentenceByDependencies,
+		"lr" : ScoreSentenceByLinearRegression,
 	}
 
 	np.random.seed(678901234)
@@ -198,7 +199,7 @@ if __name__ == "__main__":
 
 
 	SCORE_FUNC = scoring_classes[args.scoring_method](
-		res, data=X, UD=train_ud, max_gap=args.max_gap, min_value=0.25, max_value=1.)
+		res, data=X, UD=train_ud, max_gap=args.max_gap, min_value=0.25, max_value=1., train_langs=train_langs, test_lang=test_lang)
 
 	test_results = []
 
@@ -207,19 +208,23 @@ if __name__ == "__main__":
 		mean = 0
 		pbar = tqdm(test_ud.sentences)
 		for sentence in pbar:
-			wrong_reading = __change_ud_morphology(
+			wrong_reading = change_ud_morphology(
 				sentence, args.n_changes, lang=test_lang)
-			wrong_encoded = IntListList(DictList(*wrong_reading))
-			target = UD_sentence_to_list(sentence)
 
-			wrong_score = SCORE_FUNC.score(wrong_encoded)
-			target_score = SCORE_FUNC.score(target)
+			if wrong_reading is not None:
+				wrong_encoded = IntListList(DictList(*wrong_reading))
+				target = UD_sentence_to_list(sentence)
 
-			if target.intersection(wrong_encoded) < 0.95:
-				test_results += [target_score > wrong_score]
-				mean = np.mean(test_results)
-				
-			pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
+				wrong_score = SCORE_FUNC.score(wrong_encoded)
+				target_score = SCORE_FUNC.score(target)
+
+				#print wrong_score, target_score
+
+				if target.intersection(wrong_encoded) < 0.95:
+					test_results += [target_score > wrong_score]
+					mean = np.mean(test_results)
+
+				pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
 
 	elif args.test == 2:
 		# TEST 2 : compare all readings (possible or from disambiguator)
@@ -258,6 +263,8 @@ if __name__ == "__main__":
 					mean = np.mean(test_results)
 
 			pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
+
+	test_results = np.asarray(test_results).flatten()
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde

@@ -4,6 +4,7 @@ from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
 from common import *
+import numpy as np
 import random
 import codecs
 from subprocess import call
@@ -165,6 +166,21 @@ def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 				morphology["POS"] = unicode(random.choice(poses))
 		sent.append(morphology)
 	return sent
+
+def change_ud_morphology(sentence, n, lang="fin"):
+	poss = __give_all_possibilities(sentence, lang=lang)
+	current = UD_sentence_to_dict(sentence)
+	valid_idx = np.where([len(_) > 1 for _ in poss])[0]
+	if len(valid_idx) < n:
+		return None
+	idx = np.random.choice(valid_idx, size=(n,), replace=False)
+	out = []
+	for i in range(len(current)):
+		if not i in idx:
+			out += [current[i]]
+		else:
+			out += [random.choice([p for p in poss[i] if not p == current[i]])]
+	return out
 
 def __give_all_possibilities(ud_sentence, lang="fin"):
 	nodes = ud_sentence.find()

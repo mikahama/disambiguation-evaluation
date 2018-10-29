@@ -30,6 +30,11 @@ def UD_sentence_to_list(sentence, match_empty_nodes=False):
 	tmp.sort()
 	return IntListList(DictList(*[parse_node_to_dict(node) for node in tmp]))
 
+def UD_sentence_to_dict(sentence, match_empty_nodes=False):
+	tmp = sentence.find(match_empty_nodes=match_empty_nodes)
+	tmp.sort()
+	return [parse_node_to_dict(node) for node in tmp]
+
 class DictList(list):
 	def __init__(self,*args):
 		if len(args) == 1: # then we could be casting
@@ -67,6 +72,50 @@ class IntListList(list):
 
 	def nested_len(self):
 		return int(np.sum([len(_) for _ in self]))
+
+	def remove_values(self,vals):
+		if not isinstance(vals, list):
+			vals = [vals]
+		return IntListList([[_ for _ in x if not _ in vals] for x in self])
+
+	def add_values(self,vals):
+		if not isinstance(vals, list):
+			vals = [vals]
+		return IntListList([x + vals for x in self])
+
+	def remove_empty_margin_gaps(self):
+		# remove empty lists at beginning and end of IntListList
+		x = copy.deepcopy(self)
+		while len(x) > 0 and len(x[0]) == 0:
+			x.pop(0)
+		while len(x) > 0 and len(x[-1]) == 0:
+			x.pop(-1)
+		return x
+
+	def count_gaps(self):
+		i = 0
+		counts = []
+		while i < len(self):
+			if len(self[i]) == 0:
+				count = 0
+				while len(self[i]) == 0:
+					count += 1
+					i += 1
+				counts += [count]
+			else:
+				i += 1
+		return counts
+
+	def max_gap(self):
+		counts = self.count_gaps()
+		if len(counts) == 0:
+			return 0
+		elif len(counts) == 1:
+			return counts[0]
+		return max(*counts)
+
+	def n_gaps(self):
+		return len(self.count_gaps())
 
 	def intersection(self,x):
 		# measures the intersection of two IntListList
@@ -142,6 +191,27 @@ class ResultDict(collections.OrderedDict):
 	def map_vals_to_list(self, func):
 		return [func(v) for v in self.values()]
 
+	def filter_keys(self, func):
+		new_dict = []
+		for k,v in self.items():
+			if func(k):
+				new_dict += [(k,v)]
+		return ResultDict(new_dict)
+
+	def filter_vals(self, func):
+		new_dict = []
+		for k,v in self.items():
+			if func(v):
+				new_dict += [(k,v)]
+		return ResultDict(new_dict)
+
+	def filter(self, func):
+		new_dict = []
+		for k,v in self.items():
+			if func(k,v):
+				new_dict += [(k,v)]
+		return ResultDict(new_dict)
+
 	def norm_vals(self, min_value=0., max_value=1.):
 		# return values on the normalized range 0.,1.
 		_min = float(np.min(list(self.values())))
@@ -170,6 +240,9 @@ class Results(object):
 		self.patterns = self.sid_dict.map_keys_to_list(IntListList)
 		self.gap_distributions = None
 		self.dep_scores = None
+
+	def pattern_vector(self,x):
+		return np.asarray([x.contains(pattern,return_count=False) for pattern in self.patterns])
 
 	def calculate_stats(self):
 		pattern_lengths = self.score_dict.map_keys_to_list(
@@ -283,5 +356,11 @@ if __name__ == "__main__":
 	print IntListList([[123]])[0]
 
 	print IntListList([[3, 5], [3], [4, 6, 7]]).nested_len()
+
+	print IntListList([[], [], [], [123], [], [3,4], [5,6], []]).remove_empty_margin_gaps()
+
+	print IntListList([[123], [], [3,4], [5,6], [], [], [], ]).remove_empty_margin_gaps()
+
+	print IntListList([[123], [], [], [34], [], [], [], [], [45]]).count_gaps()
 
 #
