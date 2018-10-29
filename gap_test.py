@@ -19,30 +19,41 @@ def print_dict(d):
 def print_txt_file(fp):
     call(["cat", fp])
 
-def encode(x):
-    x = x.add_values(99)
-    x.append([99])
-    return x
+X = [
+    IntListList([[4,5], [3], [6], [2]]),
+    IntListList([[4,5], [7], [6]]),
+    IntListList([[4,5], [5], [6]])
+]
 
-def decode(x):
-    x = IntListList(x).remove_values(99)
-    return x.remove_empty_margin_gaps().to_tuple()
+#ud = UD_collection(codecs.open("ud/fi-ud-train.conllu", encoding="utf-8"))
+#X = [UD_sentence_to_list(sentence) for sentence in ud.sentences[:10]]
 
-ud = UD_collection(codecs.open("ud/fi-ud-train.conllu", encoding="utf-8"))
-X = [UD_sentence_to_list(sentence) for sentence in ud.sentences[:10]]
+for algorithm in ["BIDE+", "VMSP"]:
+    for pad_value in [None, 2**16]:
 
-#X = [
-#    IntListList([[4,5], [3], [6], [2]]),
-#    IntListList([[4,5], [7], [6]])
-#]
-X = list(map(encode, X))
+        print("ALGORITHM : ", algorithm, "PAD_VALUE : ", pad_value)
 
-res = run_spmf_full(
-    X, min_sup=0, algorithm="BIDE+", max_pattern_length=10, max_gap=1)
+        res = run_spmf_full(
+            X,
+            min_sup=0,
+            algorithm=algorithm,
+            min_pattern_length=2,
+            max_pattern_length=5,
+            max_gap=1,
+            min_pattern_span=2,
+            max_pattern_span=5,
+            max_span_gap=2,
+            pad_value=pad_value)
 
-print_txt_file("tmp_spmf.txt")
-print("\n")
-print_txt_file("tmp_spmf_output.txt")
-print_dict(res.score_dict.map_keys(decode).filter(
-    lambda k,v : (v > 1) and (len(k) < 5) and (IntListList(k).max_gap() < 3)) )
-#print_dict(res.sid_dict.map_keys(decode))
+        print("INPUT : ")
+        print_txt_file("tmp_spmf.txt")
+        print("\n")
+
+        print("OUTPUT : ")
+        print_txt_file("tmp_spmf_output.txt")
+        print("\n")
+
+        print("SCORE DICT : ")
+        print_dict(res.score_dict)
+        print len(res.score_dict)
+        print("\n")
