@@ -4,8 +4,8 @@ from custom_types import *
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
 
-#from test_sentences import __change_ud_morphology as cud
-#from test_sentences import change_ud_morphology
+from test_sentences import __change_ud_morphology as cud
+from test_sentences import change_ud_morphology
 
 class Scoring(object):
 	"""docstring for Scoring"""

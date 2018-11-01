@@ -42,7 +42,7 @@ for algorithm in ["BIDE+", "VMSP"]:
             max_gap=1,
             min_pattern_span=2,
             max_pattern_span=5,
-            max_span_gap=2,
+            max_span_gap=0,
             pad_value=pad_value)
 
         print("INPUT : ")

@@ -13,6 +13,9 @@ from custom_types import *
 # TODO : try just learning on props
 # TODO : easy way to filter list of list
 
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr --max-span-gap 2 --pad-value 900 (83.8)
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr (72.55)
+
 np.warnings.filterwarnings('ignore')
 
 # tuple of tuple to list of list
@@ -103,6 +106,11 @@ def make_arg_parser():
 	arg_parser.add_argument('--test', help='an integer 1 or 2', type=int, default=1)
 	arg_parser.add_argument('--n-changes', help='the number of changes in TEST 1', type=int, default=1)
 	arg_parser.add_argument('--min-sup',help='SPMF minimum support', type=int, default=10)
+	arg_parser.add_argument('--min-pattern-span', type=int, default=1)
+	arg_parser.add_argument('--max-pattern-span', type=int, default=5)
+	arg_parser.add_argument('--max-span-gap', type=int, default=0)
+	arg_parser.add_argument('--pad-value', type=int, default=-1)
+	arg_parser.add_argument('--min-pattern-length', type=int, default=2)
 	arg_parser.add_argument('--max-pattern-length',help='SPMF max pattern pattern length', type=int, default=20)
 	arg_parser.add_argument('--max-gap',help='SPMF max gap', type=int, default=1)
 	arg_parser.add_argument('--max-window',help='Max window', type=int, default=3)
@@ -168,6 +176,8 @@ if __name__ == "__main__":
 	else:
 		print "No arguments, using variables"
 
+	if args.pad_value == -1:
+		args.pad_value = None
 
 
 	# VMSP performs pretty well min_sup=5, max_pattern_length=20, max_gap=1
@@ -190,7 +200,7 @@ if __name__ == "__main__":
 		train_ud += [ud]
 		X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
 
-		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
+		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, min_pattern_length=args.min_pattern_length, max_pattern_length=args.max_pattern_length, min_pattern_span=args.min_pattern_span, max_pattern_span=args.max_pattern_span, max_span_gap=args.max_span_gap, pad_value=args.pad_value, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
 
 		new_res.calculate_stats()
 		res.extend(new_res)
