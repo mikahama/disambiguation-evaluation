@@ -25,13 +25,16 @@ class ScoreSentenceByLinearRegression(Scoring):
 			#if lang == "sme":
 			for sentence in tqdm(ud.sentences):
 				#wrong_reading = cud(sentence, np.random.randint(5)+1, lang=lang)
-				wrong_reading = change_ud_morphology(
-					sentence, 1, lang=lang)
-				if wrong_reading is not None:
-					wrong = IntListList(DictList(*wrong_reading))
-					target = UD_sentence_to_list(sentence)
-					X += [ res.pattern_vector(target), res.pattern_vector(wrong) ]
-					Y += [ 1, 0 ]
+				target = UD_sentence_to_list(sentence)
+				X += [res.pattern_vector(target)]
+				Y += [1]
+				for i in range(4):
+					wrong_reading = change_ud_morphology(
+						sentence, np.random.randint(5)+1, lang=lang)
+					if wrong_reading is not None:
+						wrong = IntListList(DictList(*wrong_reading))
+						X += [res.pattern_vector(wrong)]
+						Y += [0]
 
 		# train the decision tree
 		print "TRAINING LINEAR REGRESSION"

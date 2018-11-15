@@ -13,8 +13,9 @@ from custom_types import *
 # TODO : try just learning on props
 # TODO : easy way to filter list of list
 
-# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr --max-span-gap 2 --pad-value 900 (83.8)
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr --max-span-gap 2 --pad-value 900 (83.8) (84.07 with data augmentation)
 # python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr (72.55)
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr --max-span-gap 2 --pad-value 900 --max-pattern-span 10 --max-span-gap 3 (80.9)
 
 np.warnings.filterwarnings('ignore')
 

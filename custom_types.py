@@ -247,9 +247,13 @@ class Results(object):
 	def calculate_stats(self):
 		pattern_lengths = self.score_dict.map_keys_to_list(
 			lambda x : IntListList(x).nested_len())
+		pattern_spans = self.score_dict.map_keys_to_list(
+			lambda x : len(x))
 		print "NUMBER OF PATTERNS : {}".format(len(self.patterns))
 		print "MAX PATTERN LENGTH : {}".format(np.max(pattern_lengths))
 		print "MEAN PATTERN LENGTH : {}".format(np.mean(pattern_lengths))
+		print "MIN PATTERN SPAN : {}".format(np.min(pattern_spans))
+		print "MAX PATTERN SPAN : {}".format(np.max(pattern_spans))
 
 	def calculate_gap_distribution(self,data,ungapped_pattern,idx,max_gap=1):
 		gapped_patterns = ungapped_pattern.all_gapped_versions(max_gap=max_gap)
