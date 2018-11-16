@@ -159,6 +159,8 @@ if __name__ == "__main__":
     # prune the sid_dict to only include patterns that occur in train_idx
     sid_dict.prune(train_idx, top_k_support=args.k, min_pattern_items=2, min_pattern_length=2)
 
+    print("USING {} PATTERNS".format(len(sid_dict)))
+
     X = []
     Y = []
     for idx in tqdm(train_idx):

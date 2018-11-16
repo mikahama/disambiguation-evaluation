@@ -267,11 +267,12 @@ class ResultDict(collections.OrderedDict):
 				del self[k]
 			else:
 				self[k] = vv
+		cur_length = len(self)
 		lidx = np.argsort([len(v) for v in self.values()])[:-1*top_k_support]
 		lkeys = [self.keys()[i] for i in lidx]
 		for k in lkeys:
 			del self[k]
-		assert len(self) == top_k_support
+		assert len(self) == min(top_k_support,cur_length)
 
 	def pattern_vector(self, x):
 		return np.asarray([x.contains(k,return_count=False) for k in self.keys()])
