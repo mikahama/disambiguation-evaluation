@@ -201,6 +201,13 @@ if __name__ == "__main__":
 		train_ud += [ud]
 		X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
 
+		# add some fake sentences to X
+		for sentence in ud.sentences:
+			wrong_reading = change_ud_morphology(
+				sentence, np.random.randint(5)+1, lang=train_lang)
+			if wrong_reading is not None:
+				X += [IntListList(DictList(*wrong_reading))]
+
 		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, min_pattern_length=args.min_pattern_length, max_pattern_length=args.max_pattern_length, min_pattern_span=args.min_pattern_span, max_pattern_span=args.max_pattern_span, max_span_gap=args.max_span_gap, pad_value=args.pad_value, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
 
 		new_res.calculate_stats()

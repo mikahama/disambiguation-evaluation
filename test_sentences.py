@@ -3,7 +3,7 @@ from uralicNLP.cg3 import Cg3
 from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
-from common import *
+#from common import *
 import numpy as np
 import random
 import codecs
@@ -78,7 +78,7 @@ def __parse_spmf_line(line):
 		s.append(parts)
 	return IntListList(s), int(score), sid
 
-def read_spmf_output(file_path, min_pattern_length=2, min_pattern_span=2, max_pattern_span=5, max_span_gap=0, pad_value=None):
+def read_spmf_output(file_path, pad_value=None):
 	f = open(file_path, "r")
 	score_dict = []
 	sid_dict = []
@@ -88,12 +88,11 @@ def read_spmf_output(file_path, min_pattern_length=2, min_pattern_span=2, max_pa
 			key, score, sid = _out
 			if pad_value is not None:
 				key = decode(key, pad_value=pad_value)
-			if (key.max_gap() <= max_span_gap) and (len(key) <= max_pattern_span) and (len(key) >= min_pattern_span) and (key.nested_len() >= min_pattern_length):
-				score_dict += [(key.to_tuple(), score)]
-				sid_dict += [(key.to_tuple(), sid)]
+			score_dict += [(key.to_tuple(), score)]
+			sid_dict += [(key.to_tuple(), sid)]
 	return Results(ResultDict(score_dict), ResultDict(sid_dict))
 
-def run_spmf_full(X, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", min_pattern_length=2, max_pattern_length=5, max_gap=1, save_results_to="tmp_spmf_output.txt", temp_file="tmp_spmf.txt", min_pattern_span=2, max_pattern_span=5, max_span_gap=0, pad_value=None):
+def run_spmf_full(X, algorithm="VMSP", min_sup=5, spmf_path="spmf.jar", max_pattern_length=100, max_gap=1, save_results_to="tmp_spmf_output.txt", temp_file="tmp_spmf.txt", pad_value=None):
 	"""
 	min_pattern_length : the min number of integers in a pattern,
 	max_pattern_length : the max number of integers in a pattern,
@@ -117,12 +116,7 @@ def run_spmf_full(X, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", min_pa
 	else:
 		call(basic_call)
 	return read_spmf_output(
-		save_results_to,
-		min_pattern_length=min_pattern_length,
-		min_pattern_span=min_pattern_span,
-		max_pattern_span=max_pattern_span,
-		max_span_gap=max_span_gap,
-		pad_value=pad_value)
+		save_results_to,pad_value=pad_value)
 
 def __disambiguate(udsentence, lang="fin"):
 	tmp = udsentence.find()
@@ -212,7 +206,7 @@ def change_ud_morphology(sentence, n, lang="fin"):
 			out += [random.choice([p for p in poss[i] if not p == current[i]])]
 	return out
 
-def __give_all_possibilities(ud_sentence, lang="fin"):
+def give_all_possibilities(ud_sentence, lang="fin"):
 	nodes = ud_sentence.find()
 	nodes.sort()
 	sent = []
@@ -223,6 +217,8 @@ def __give_all_possibilities(ud_sentence, lang="fin"):
 			forms.append({})
 		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
 	return sent
+
+
 
 
 

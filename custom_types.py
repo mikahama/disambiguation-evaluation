@@ -10,6 +10,8 @@ from backward_map import bw_map
 from maps import ud_pos
 from tqdm import tqdm
 
+from uralicNLP.ud_tools import UD_sentence
+
 def parse_feature_to_dict(s):
 	if s == "_":
 		return {}
@@ -54,12 +56,20 @@ class DictList(list):
 		return IntListList(self).to_tuple()
 
 class IntListList(list):
-	def __init__(self,*args):
+	def __init__(self,*args,**kwargs):
 		if len(args) == 1: # then we could be casting
+			if kwargs.get("force_dict", False):
+				args = (DictList(*args[0]),)
 			if isinstance(args[0], DictList):
 				args = [[fw_map[k][v][1] for k,v in x.items()] for x in args[0]]
-			elif type(args[0]) in [list, tuple, IntListList]:
+			elif type(args[0]) in [list, tuple, IntListList, np.ndarray]:
 				args = [[_ for _ in x] for x in args[0]]
+			elif isinstance(args[0], UD_sentence):
+				tmp = args[0].find(
+					match_empty_nodes=kwargs.get("match_empty_nodes", False))
+				tmp.sort()
+				dl = DictList(*[parse_node_to_dict(node) for node in tmp])
+				args = [[fw_map[k][v][1] for k,v in x.items()] for x in dl]
 		assert all([isinstance(arg, list) for arg in args])
 		super(IntListList,self).__init__(args)
 
@@ -69,6 +79,9 @@ class IntListList(list):
 
 	def to_tuple(self):
 		return tuple([tuple([_ for _ in x]) for x in self])
+
+	def to_numpy(self):
+		return np.array([np.asarray([_ for _ in x]) for x in self])
 
 	def nested_len(self):
 		return int(np.sum([len(_) for _ in self]))
@@ -172,6 +185,47 @@ class IntListList(list):
 				gappedversions += [(counts, self.insert_gaps(counts))]
 		return ResultDict(gappedversions)
 
+class Dataset(collections.OrderedDict):
+	def __init__(self, keys=None, filepath=None):
+		if keys is not None:
+			items = []
+			for k in keys:
+				items.append((k,[]))
+			super(Dataset,self).__init__(items)
+		elif filepath is not None:
+			self = self.load(filepath)
+		else:
+			raise ValueError("MUST PROVIDE KEYS OR FILEPATH")
+	def add_example(self, example, ignore_unused=True):
+		assert isinstance(example, dict)
+		for k in self.keys():
+			if k in example:
+				self[k].append(example[k])
+			elif not ignore_unused:
+				raise ValueError("MISSING KEY {}".format(k))
+	def save(self, filepath):
+		for k,v in self.items():
+			self[k] = np.array(v)
+			assert isinstance(self[k], np.ndarray)
+		np.savez(filepath, **self)
+	def load(self, filepath):
+		x = np.load(filepath)
+		items = [(k,list(x[k])) for k in x.keys()]
+		return super(Dataset,self).__init__(items)
+	def size(self):
+		return {k:len(v) for k,v in self.items()}
+	def __add__(self,d):
+		if not all([k in d for k in self.keys()]):
+			raise ValueError("KEYS DO NOT MATCH")
+		for k in self.keys():
+			self[k].extend(d[k])
+		return self
+	def modify_vals(self, keys, func):
+		keys = np.atleast_1d(keys)
+		for k in keys:
+			self[k] = list(map(func, self[k]))
+
+
 class ResultDict(collections.OrderedDict):
 	def map_keys(self, func):
 		newdict = []
@@ -204,6 +258,23 @@ class ResultDict(collections.OrderedDict):
 			if func(v):
 				new_dict += [(k,v)]
 		return ResultDict(new_dict)
+
+	def prune(self, idx, min_pattern_items=2, min_pattern_length=2, top_k_support=200):
+		for k,v in self.items():
+			kk = IntListList(k)
+			vv = [_ for _ in v if _ in idx]
+			if (len(vv) == 0) or (len(kk) < min_pattern_length) or (kk.nested_len < min_pattern_items):
+				del self[k]
+			else:
+				self[k] = vv
+		lidx = np.argsort([len(v) for v in self.values()])[:-1*top_k_support]
+		lkeys = [self.keys()[i] for i in lidx]
+		for k in lkeys:
+			del self[k]
+		assert len(self) == top_k_support
+
+	def pattern_vector(self, x):
+		return np.asarray([x.contains(k,return_count=False) for k in self.keys()])
 
 	def filter(self, func):
 		new_dict = []
@@ -325,6 +396,9 @@ if __name__ == "__main__":
 	print IntListList( [[34, 56], [7], [], [45]] )
 	print IntListList( ((220, 56), (), (40,)) )
 	print IntListList( ((220, 56), (), (40,)) ).to_tuple()
+	nu = IntListList( ((220, 56), (), (40,)) ).to_numpy()
+	print nu
+	print IntListList(nu)
 
 	# check DictList casting
 	print DictList( IntListList([[45, 20], [30]]) )
@@ -366,5 +440,16 @@ if __name__ == "__main__":
 	print IntListList([[123], [], [3,4], [5,6], [], [], [], ]).remove_empty_margin_gaps()
 
 	print IntListList([[123], [], [], [34], [], [], [], [], [45]]).count_gaps()
+
+	x = IntListList([[3,4],[5,6]]).to_numpy()
+	d = Dataset(keys=["input", "output"])
+	d.add_example({"input" : x, "output" : x})
+	d.add_example({"input" : x, "output" : x})
+	d.add_example({"input" : x, "output" : x})
+
+	d.save("test")
+	e = Dataset(filepath="test.npz")
+
+
 
 #
