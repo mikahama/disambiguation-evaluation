@@ -13,11 +13,12 @@
 #module use -a /proj/nlpl/software/modulefiles/
 module load python-env/2.7.13
 module load java/oracle/1.8
+module unload hfst
 
 
 cd /homeappl/home/mikahama/disambiguation-evaluation
 
 source venv/bin/activate
-python -E test_sctipt.py
+python test_script.py
 
 used_slurm_resources.bash
