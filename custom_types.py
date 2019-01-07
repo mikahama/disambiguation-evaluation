@@ -10,6 +10,8 @@ from backward_map import bw_map
 from maps import ud_pos
 from tqdm import tqdm
 
+from uralicNLP.ud_tools import UD_sentence
+
 def parse_feature_to_dict(s):
 	if s == "_":
 		return {}
@@ -30,6 +32,11 @@ def UD_sentence_to_list(sentence, match_empty_nodes=False):
 	tmp.sort()
 	return IntListList(DictList(*[parse_node_to_dict(node) for node in tmp]))
 
+def UD_sentence_to_dict(sentence, match_empty_nodes=False):
+	tmp = sentence.find(match_empty_nodes=match_empty_nodes)
+	tmp.sort()
+	return [parse_node_to_dict(node) for node in tmp]
+
 class DictList(list):
 	def __init__(self,*args):
 		if len(args) == 1: # then we could be casting
@@ -49,12 +56,20 @@ class DictList(list):
 		return IntListList(self).to_tuple()
 
 class IntListList(list):
-	def __init__(self,*args):
+	def __init__(self,*args,**kwargs):
 		if len(args) == 1: # then we could be casting
+			if kwargs.get("force_dict", False):
+				args = (DictList(*args[0]),)
 			if isinstance(args[0], DictList):
 				args = [[fw_map[k][v][1] for k,v in x.items()] for x in args[0]]
-			elif type(args[0]) in [list, tuple, IntListList]:
+			elif type(args[0]) in [list, tuple, IntListList, np.ndarray]:
 				args = [[_ for _ in x] for x in args[0]]
+			elif isinstance(args[0], UD_sentence):
+				tmp = args[0].find(
+					match_empty_nodes=kwargs.get("match_empty_nodes", False))
+				tmp.sort()
+				dl = DictList(*[parse_node_to_dict(node) for node in tmp])
+				args = [[fw_map[k][v][1] for k,v in x.items()] for x in dl]
 		assert all([isinstance(arg, list) for arg in args])
 		super(IntListList,self).__init__(args)
 
@@ -65,8 +80,63 @@ class IntListList(list):
 	def to_tuple(self):
 		return tuple([tuple([_ for _ in x]) for x in self])
 
+	def to_numpy(self):
+		return np.array([np.asarray([_ for _ in x]) for x in self])
+
 	def nested_len(self):
 		return int(np.sum([len(_) for _ in self]))
+
+	def remove_values(self,vals):
+		if not isinstance(vals, list):
+			vals = [vals]
+		return IntListList([[_ for _ in x if not _ in vals] for x in self])
+
+	def add_values(self,vals):
+		if not isinstance(vals, list):
+			vals = [vals]
+		return IntListList([x + vals for x in self])
+
+	def remove_empty_margin_gaps(self):
+		# remove empty lists at beginning and end of IntListList
+		x = copy.deepcopy(self)
+		while len(x) > 0 and len(x[0]) == 0:
+			x.pop(0)
+		while len(x) > 0 and len(x[-1]) == 0:
+			x.pop(-1)
+		return x
+
+	def count_gaps(self):
+		i = 0
+		counts = []
+		while i < len(self):
+			if len(self[i]) == 0:
+				count = 0
+				while len(self[i]) == 0:
+					count += 1
+					i += 1
+				counts += [count]
+			else:
+				i += 1
+		return counts
+
+	def max_gap(self):
+		counts = self.count_gaps()
+		if len(counts) == 0:
+			return 0
+		elif len(counts) == 1:
+			return counts[0]
+		return max(*counts)
+
+	def n_gaps(self):
+		return len(self.count_gaps())
+
+	def intersection(self,x):
+		# measures the intersection of two IntListList
+		x = IntListList(x)
+		inter = 0
+		for i in range(min(len(self), len(x))):
+			inter += len(set(self[i]).intersection(set(x[i])))
+		return float(inter) / float(max(self.nested_len(),x.nested_len()))
 
 	def contains(self,x,verbose=False,return_count=True):
 		# does the IntListList contain x
@@ -115,6 +185,47 @@ class IntListList(list):
 				gappedversions += [(counts, self.insert_gaps(counts))]
 		return ResultDict(gappedversions)
 
+class Dataset(collections.OrderedDict):
+	def __init__(self, keys=None, filepath=None):
+		if keys is not None:
+			items = []
+			for k in keys:
+				items.append((k,[]))
+			super(Dataset,self).__init__(items)
+		elif filepath is not None:
+			self = self.load(filepath)
+		else:
+			raise ValueError("MUST PROVIDE KEYS OR FILEPATH")
+	def add_example(self, example, ignore_unused=True):
+		assert isinstance(example, dict)
+		for k in self.keys():
+			if k in example:
+				self[k].append(example[k])
+			elif not ignore_unused:
+				raise ValueError("MISSING KEY {}".format(k))
+	def save(self, filepath):
+		for k,v in self.items():
+			self[k] = np.array(v)
+			assert isinstance(self[k], np.ndarray)
+		np.savez(filepath, **self)
+	def load(self, filepath):
+		x = np.load(filepath)
+		items = [(k,list(x[k])) for k in x.keys()]
+		return super(Dataset,self).__init__(items)
+	def size(self):
+		return {k:len(v) for k,v in self.items()}
+	def __add__(self,d):
+		if not all([k in d for k in self.keys()]):
+			raise ValueError("KEYS DO NOT MATCH")
+		for k in self.keys():
+			self[k].extend(d[k])
+		return self
+	def modify_vals(self, keys, func):
+		keys = np.atleast_1d(keys)
+		for k in keys:
+			self[k] = list(map(func, self[k]))
+
+
 class ResultDict(collections.OrderedDict):
 	def map_keys(self, func):
 		newdict = []
@@ -133,6 +244,45 @@ class ResultDict(collections.OrderedDict):
 
 	def map_vals_to_list(self, func):
 		return [func(v) for v in self.values()]
+
+	def filter_keys(self, func):
+		new_dict = []
+		for k,v in self.items():
+			if func(k):
+				new_dict += [(k,v)]
+		return ResultDict(new_dict)
+
+	def filter_vals(self, func):
+		new_dict = []
+		for k,v in self.items():
+			if func(v):
+				new_dict += [(k,v)]
+		return ResultDict(new_dict)
+
+	def prune(self, idx, min_pattern_items=2, min_pattern_length=2, top_k_support=200):
+		for k,v in self.items():
+			kk = IntListList(k)
+			vv = [_ for _ in v if _ in idx]
+			if (len(vv) == 0) or (len(kk) < min_pattern_length) or (kk.nested_len < min_pattern_items):
+				del self[k]
+			else:
+				self[k] = vv
+		cur_length = len(self)
+		lidx = np.argsort([len(v) for v in self.values()])[:-1*top_k_support]
+		lkeys = [self.keys()[i] for i in lidx]
+		for k in lkeys:
+			del self[k]
+		assert len(self) == min(top_k_support,cur_length)
+
+	def pattern_vector(self, x):
+		return np.asarray([x.contains(k,return_count=False) for k in self.keys()])
+
+	def filter(self, func):
+		new_dict = []
+		for k,v in self.items():
+			if func(k,v):
+				new_dict += [(k,v)]
+		return ResultDict(new_dict)
 
 	def norm_vals(self, min_value=0., max_value=1.):
 		# return values on the normalized range 0.,1.
@@ -163,12 +313,19 @@ class Results(object):
 		self.gap_distributions = None
 		self.dep_scores = None
 
+	def pattern_vector(self,x):
+		return np.asarray([x.contains(pattern,return_count=False) for pattern in self.patterns])
+
 	def calculate_stats(self):
 		pattern_lengths = self.score_dict.map_keys_to_list(
 			lambda x : IntListList(x).nested_len())
+		pattern_spans = self.score_dict.map_keys_to_list(
+			lambda x : len(x))
 		print "NUMBER OF PATTERNS : {}".format(len(self.patterns))
 		print "MAX PATTERN LENGTH : {}".format(np.max(pattern_lengths))
 		print "MEAN PATTERN LENGTH : {}".format(np.mean(pattern_lengths))
+		print "MIN PATTERN SPAN : {}".format(np.min(pattern_spans))
+		print "MAX PATTERN SPAN : {}".format(np.max(pattern_spans))
 
 	def calculate_gap_distribution(self,data,ungapped_pattern,idx,max_gap=1):
 		gapped_patterns = ungapped_pattern.all_gapped_versions(max_gap=max_gap)
@@ -207,8 +364,6 @@ class Results(object):
 					for node in tmp:
 						mapping[node.id] = len(mapping)
 
-					#print np.sort(mapping.values()), len(sentence)
-
 					for node in tmp:
 						for child in node.children:
 							deps = [mapping[node.id], mapping[child.node.id]]
@@ -242,6 +397,9 @@ if __name__ == "__main__":
 	print IntListList( [[34, 56], [7], [], [45]] )
 	print IntListList( ((220, 56), (), (40,)) )
 	print IntListList( ((220, 56), (), (40,)) ).to_tuple()
+	nu = IntListList( ((220, 56), (), (40,)) ).to_numpy()
+	print nu
+	print IntListList(nu)
 
 	# check DictList casting
 	print DictList( IntListList([[45, 20], [30]]) )
@@ -277,5 +435,22 @@ if __name__ == "__main__":
 	print IntListList([[123]])[0]
 
 	print IntListList([[3, 5], [3], [4, 6, 7]]).nested_len()
+
+	print IntListList([[], [], [], [123], [], [3,4], [5,6], []]).remove_empty_margin_gaps()
+
+	print IntListList([[123], [], [3,4], [5,6], [], [], [], ]).remove_empty_margin_gaps()
+
+	print IntListList([[123], [], [], [34], [], [], [], [], [45]]).count_gaps()
+
+	x = IntListList([[3,4],[5,6]]).to_numpy()
+	d = Dataset(keys=["input", "output"])
+	d.add_example({"input" : x, "output" : x})
+	d.add_example({"input" : x, "output" : x})
+	d.add_example({"input" : x, "output" : x})
+
+	d.save("test")
+	e = Dataset(filepath="test.npz")
+
+
 
 #

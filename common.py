@@ -13,6 +13,10 @@ from custom_types import *
 # TODO : try just learning on props
 # TODO : easy way to filter list of list
 
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr --max-span-gap 2 --pad-value 900 (83.8) (84.07 with data augmentation)
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr (72.55)
+# python common.py sme sme --spmf-algorithm VMSP --min-sup 10 --scoring-method lr --max-span-gap 2 --pad-value 900 --max-pattern-span 10 --max-span-gap 3 (80.9)
+
 np.warnings.filterwarnings('ignore')
 
 # tuple of tuple to list of list
@@ -100,7 +104,14 @@ def make_arg_parser():
 	arg_parser.add_argument('train_language',help='Language code for training')
 	arg_parser.add_argument('test_language',help='Language code for testing')
 	arg_parser.add_argument('--spmf-algorithm',help='SPMF algorithm to be used', default="VMSP")
+	arg_parser.add_argument('--test', help='an integer 1 or 2', type=int, default=1)
+	arg_parser.add_argument('--n-changes', help='the number of changes in TEST 1', type=int, default=1)
 	arg_parser.add_argument('--min-sup',help='SPMF minimum support', type=int, default=10)
+	arg_parser.add_argument('--min-pattern-span', type=int, default=1)
+	arg_parser.add_argument('--max-pattern-span', type=int, default=5)
+	arg_parser.add_argument('--max-span-gap', type=int, default=0)
+	arg_parser.add_argument('--pad-value', type=int, default=-1)
+	arg_parser.add_argument('--min-pattern-length', type=int, default=2)
 	arg_parser.add_argument('--max-pattern-length',help='SPMF max pattern pattern length', type=int, default=20)
 	arg_parser.add_argument('--max-gap',help='SPMF max gap', type=int, default=1)
 	arg_parser.add_argument('--max-window',help='Max window', type=int, default=3)
@@ -112,8 +123,6 @@ def make_arg_parser():
 def full_window(x,w,blank={}):
 	x = list(x)
 	return zip(*[[{}]*i + (x[:-i] if i > 0 else x) for i in range(w-1,-1,-1)])
-
-
 
 def __make_filename_from_args(args):
 	d = {}
@@ -149,6 +158,7 @@ if __name__ == "__main__":
 		"random":RandomScore,
 		"gap" : ScoreSentenceByGapFreq,
 		"dep" : ScoreSentenceByDependencies,
+		"lr" : ScoreSentenceByLinearRegression,
 	}
 
 	np.random.seed(678901234)
@@ -167,6 +177,8 @@ if __name__ == "__main__":
 	else:
 		print "No arguments, using variables"
 
+	if args.pad_value == -1:
+		args.pad_value = None
 
 
 	# VMSP performs pretty well min_sup=5, max_pattern_length=20, max_gap=1
@@ -189,7 +201,14 @@ if __name__ == "__main__":
 		train_ud += [ud]
 		X = [UD_sentence_to_list(sentence) for sentence in ud.sentences]
 
-		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, max_pattern_length=args.max_pattern_length, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
+		# add some fake sentences to X
+		for sentence in ud.sentences:
+			wrong_reading = change_ud_morphology(
+				sentence, np.random.randint(5)+1, lang=train_lang)
+			if wrong_reading is not None:
+				X += [IntListList(DictList(*wrong_reading))]
+
+		new_res = run_spmf_full(X, min_sup=args.min_sup, algorithm=args.spmf_algorithm, min_pattern_length=args.min_pattern_length, max_pattern_length=args.max_pattern_length, min_pattern_span=args.min_pattern_span, max_pattern_span=args.max_pattern_span, max_span_gap=args.max_span_gap, pad_value=args.pad_value, max_gap=args.max_gap, save_results_to="results/tmp/" + filename +"_spmf_output.txt", temp_file="results/tmp/" + filename +"_tmp_spmf.txt")
 
 		new_res.calculate_stats()
 		res.extend(new_res)
@@ -198,37 +217,72 @@ if __name__ == "__main__":
 
 
 	SCORE_FUNC = scoring_classes[args.scoring_method](
-		res, data=X, UD=train_ud, max_gap=args.max_gap, min_value=0.25, max_value=1.)
+		res, data=X, UD=train_ud, max_gap=args.max_gap, min_value=0.25, max_value=1., train_langs=train_langs, test_lang=test_lang)
 
 	test_results = []
-	for sentence in test_ud.sentences:
-		all_readings = __give_all_possibilities(sentence, lang=test_lang)
-		all_encoded = [IntListList(DictList(*word)) for word in all_readings]
 
-		target = UD_sentence_to_list(sentence)
+	if args.test == 1:
+		# TEST 1 : compare simple manipulation against the original target
+		mean = 0
+		pbar = tqdm(test_ud.sentences)
+		for sentence in pbar:
+			wrong_reading = change_ud_morphology(
+				sentence, args.n_changes, lang=test_lang)
 
-		N = np.product([len(_) for _ in all_encoded])
-		if N < 1000 and N > 0:
-			all_poss = list(map(lambda x : IntListList(x), itertools.product(*all_encoded)))
+			if wrong_reading is not None:
+				wrong_encoded = IntListList(DictList(*wrong_reading))
+				target = UD_sentence_to_list(sentence)
 
-			# choose a subset to speed up testing
-			subset = np.random.choice(
-				np.arange(len(all_poss)),
-				size=(min(20,len(all_poss)),),
-				replace=False)
-			subset_poss = [all_poss[i] for i in subset]
+				wrong_score = SCORE_FUNC.score(wrong_encoded)
+				target_score = SCORE_FUNC.score(target)
 
-			wrong_scores = []
-			for reading in subset_poss:
-				if not reading == target:
-					wrong_scores += [SCORE_FUNC.score(reading)]
+				#print wrong_score, target_score
 
-			target_score = SCORE_FUNC.score(target)
+				if target.intersection(wrong_encoded) < 0.95:
+					test_results += [target_score > wrong_score]
+					mean = np.mean(test_results)
 
-			if len(wrong_scores) > 0:
-				test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
+				pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
 
-				print np.mean(test_results)
+	elif args.test == 2:
+		# TEST 2 : compare all readings (possible or from disambiguator)
+		# sure that the target is scored highest
+		mean = 0
+		pbar = tqdm(test_ud.sentences)
+		for sentence in pbar:
+			#all_readings = __give_all_possibilities(sentence, lang=test_lang)
+			all_readings = get_readings(sentence, lang=test_lang)
+			all_encoded = [IntListList(DictList(*word)) for word in all_readings]
+
+			target = UD_sentence_to_list(sentence)
+
+			N = np.product([len(_) for _ in all_encoded])
+			if N < 1000 and N > 0:
+				all_poss = list(map(lambda x : IntListList(x), itertools.product(*all_encoded)))
+
+				# choose a subset to speed up testing
+				subset = np.random.choice(
+					np.arange(len(all_poss)),
+					size=(min(20,len(all_poss)),),
+					replace=False)
+				subset_poss = [all_poss[i] for i in subset]
+
+				wrong_scores = []
+				for reading in subset_poss:
+					#if not reading == target:
+					if reading.intersection(target) < 0.95:
+						wrong_scores += [SCORE_FUNC.score(reading)]
+
+				target_score = SCORE_FUNC.score(target)
+
+				if len(wrong_scores) > 0:
+					test_results += [np.mean(np.asarray(wrong_scores) >= target_score)]
+
+					mean = np.mean(test_results)
+
+			pbar.set_description("MEAN SCORE : {0:.4f}".format(mean))
+
+	test_results = np.asarray(test_results).flatten()
 
 	from matplotlib import pyplot as plt
 	from scipy.stats import gaussian_kde

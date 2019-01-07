@@ -3,13 +3,15 @@ from uralicNLP.cg3 import Cg3
 from uralicNLP import uralicApi
 from uralicNLP.ud_tools import UD_collection
 from nltk.tokenize import word_tokenize
-from common import *
+#from common import *
+import numpy as np
 import random
 import codecs
 from subprocess import call
 from maps import ud_pos
 import collections
 from custom_types import *
+from fw_master_map import fw_map
 
 
 order = ["Case", "Number", "Person", "Tense", "Connegative", "Voice"]
@@ -44,6 +46,15 @@ def spmf_format_to_file(sentences, file_path):
 	f.write(spmf_format_sentences(sentences))
 	f.close()
 
+def encode(x,pad_value=2**16):
+	x = x.add_values(pad_value)
+	x.append([pad_value])
+	return x
+
+def decode(x,pad_value=2**16):
+	x = IntListList(x).remove_values(pad_value)
+	return x.remove_empty_margin_gaps()
+
 def __parse_spmf_line(line):
 	line = line.replace("\n", "")
 	# replace possible multiple spaces to single to prevent parsing from failing
@@ -56,7 +67,8 @@ def __parse_spmf_line(line):
 		else:
 			numbers, score = line.split(" -1 #SUP: ")
 			sid = []
-	except:
+	except Exception as e:
+		print e
 		return None
 	patterns = numbers.split("-1")
 	s = []
@@ -64,9 +76,9 @@ def __parse_spmf_line(line):
 		parts = pattern.split()
 		parts = tuple(map(int, parts))
 		s.append(parts)
-	return tuple(s), int(score), sid
+	return IntListList(s), int(score), sid
 
-def read_spmf_output(file_path):
+def read_spmf_output(file_path, pad_value=None):
 	f = open(file_path, "r")
 	score_dict = []
 	sid_dict = []
@@ -74,32 +86,43 @@ def read_spmf_output(file_path):
 		_out = __parse_spmf_line(line)
 		if _out is not None:
 			key, score, sid = _out
-			score_dict += [(key, score)]
-			sid_dict += [(key, sid)]
+			if pad_value is not None:
+				key = decode(key, pad_value=pad_value)
+			score_dict += [(key.to_tuple(), score)]
+			sid_dict += [(key.to_tuple(), sid)]
 	return Results(ResultDict(score_dict), ResultDict(sid_dict))
 
-def run_spmf_full(ll, algorithm="SPADE", min_sup=50, spmf_path="spmf.jar", max_pattern_length=5, max_gap=1, save_results_to="tmp_spmf_output.txt", temp_file="tmp_spmf.txt"):
-	spmf_format_to_file(ll, temp_file)
+def run_spmf_full(X, algorithm="VMSP", min_sup=5, spmf_path="spmf.jar", max_pattern_length=100, max_gap=1, save_results_to="tmp_spmf_output.txt", temp_file="tmp_spmf.txt", pad_value=None):
+	"""
+	min_pattern_length : the min number of integers in a pattern,
+	max_pattern_length : the max number of integers in a pattern,
+	min_pattern_span : the min number of itemsets in a pattern,
+	max_pattern_span : the max number of itemsets in a pattern,
+	max_span_gap : the max number of consecutive empty itemsets in a pattern,
+	pad_value : the value to pad each itemset with (for patterns with gaps)
+	"""
+
+	if pad_value is not None:
+		X = list(map(lambda x : encode(x,pad_value=pad_value), X))
+
+	spmf_format_to_file(X, temp_file)
 	basic_call = ["java", "-jar", spmf_path, "run", algorithm, temp_file, save_results_to, str(min_sup)+"%"]
 	if algorithm == "MaxSP":
 		call(basic_call + ["false"])
 	elif algorithm in ["VMSP", "VGEN"]:
-		# NOTE the max gap param seems to have no effect for VMSP
 		call(basic_call + [str(max_pattern_length), str(max_gap), "true"])
 	elif algorithm in ["FEAT", "FSGP"]:
 		call(basic_call + [str(max_pattern_length), "false"])
 	else:
 		call(basic_call)
-	return read_spmf_output(save_results_to)
+	return read_spmf_output(
+		save_results_to,pad_value=pad_value)
 
-
-
-def __disambiguate(sentence, lang="fin"):
-	#if type(sentence) == unicode:
-	#	sentence = sentence.encode('utf-8')
-	#tokens = word_tokenize(sentence)
-	#print tokens
+def __disambiguate(udsentence, lang="fin"):
+	tmp = udsentence.find()
+	tmp.sort()
 	cg = Cg3(lang)
+	sentence = [x.form.encode('utf-8') for x in tmp]
 	return cg.disambiguate(sentence)
 
 def __parse_morphology(morphology):
@@ -118,7 +141,7 @@ def __parse_morphology(morphology):
 				reading["POS"] = pos
 				break
 	if "POS" not in reading:
-		reading["POS"] = ""
+		reading["POS"] = "X"
 	reading["POS"] = unicode(reading["POS"])
 	for mapping, map_dict in mappings.iteritems():
 		for item in map_dict:
@@ -155,7 +178,7 @@ def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 			replacements = __parse_fst_morphologies(uralicApi.analyze(node.form.encode('utf-8'), lang))
 			was_changed = False
 			for replacement in replacements:
-				for k in _partial_keys:
+				for k in fw_map.keys():
 					if k in replacement:
 						if (k in morphology and replacement[k] != morphology[k]) or k not in morphology:
 							morphology = replacement
@@ -168,7 +191,22 @@ def __change_ud_morphology(sentence, change_x_times, lang="fin"):
 		sent.append(morphology)
 	return sent
 
-def __give_all_possibilities(ud_sentence, lang="fin"):
+def change_ud_morphology(sentence, n, lang="fin"):
+	poss = __give_all_possibilities(sentence, lang=lang)
+	current = UD_sentence_to_dict(sentence)
+	valid_idx = np.where([len(_) > 1 for _ in poss])[0]
+	if len(valid_idx) < n:
+		return None
+	idx = np.random.choice(valid_idx, size=(n,), replace=False)
+	out = []
+	for i in range(len(current)):
+		if not i in idx:
+			out += [current[i]]
+		else:
+			out += [random.choice([p for p in poss[i] if not p == current[i]])]
+	return out
+
+def give_all_possibilities(ud_sentence, lang="fin"):
 	nodes = ud_sentence.find()
 	nodes.sort()
 	sent = []
@@ -179,6 +217,8 @@ def __give_all_possibilities(ud_sentence, lang="fin"):
 			forms.append({})
 		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
 	return sent
+
+
 
 
 
