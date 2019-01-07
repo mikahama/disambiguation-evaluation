@@ -10,18 +10,14 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=mika.hamalainen@helsinki.fi
 
-module use -a /proj/nlpl/software/modulefiles/
-module load nlpl-opennmt-py
+#module use -a /proj/nlpl/software/modulefiles/
+module load python-env/2.7.13
+module load java/oracle/1.8
 
 
-cd /homeappl/home/mikahama/nmt
+cd /homeappl/home/mikahama/disambiguation-evaluation
 
-python preprocess.py -train_src FOLDERold.txt -train_tgt FOLDERnew.txt -valid_src FOLDERold_valid.txt -valid_tgt FOLDERnew_valid.txt -save_data FOLDERdata/vocabulary
-
-python train.py -data FOLDERdata/vocabulary -save_model FOLDERmodel/nmt-model
-
-lastmodel=$( ls -t FOLDERmodel/*.pt | head -1 )
-
-python translate.py -model $lastmodel -src test.txt -output FOLDERpred.txt -replace_unk
+source venv/bin/activate
+python -E test_sctipt.py
 
 used_slurm_resources.bash
