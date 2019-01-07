@@ -159,7 +159,7 @@ if __name__ == "__main__":
     # prune the sid_dict to only include patterns that occur in train_idx
     sid_dict.prune(train_idx, top_k_support=args.k, min_pattern_items=2, min_pattern_length=2)
 
-    print("USING {} PATTERNS".format(len(sid_dict)))
+    print(("USING {} PATTERNS".format(len(sid_dict))))
 
     X = []
     Y = []
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
     n_results = np.asarray(n_results)
 
-    print p_results, n_results
+    print(p_results, n_results)
 
     # rank test
     results = []
@@ -203,7 +203,7 @@ if __name__ == "__main__":
             ranks = np.argsort([s.score(r) for r in rs])
             results += [kendall_tau_dist(ranks, np.arange(len(diffs))[::-1])]
 
-    print np.mean(results)
+    print(np.mean(results))
 
 
 

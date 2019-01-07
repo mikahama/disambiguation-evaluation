@@ -151,7 +151,7 @@ props_list = [
 
 props_list = []
 
-print "THERE ARE {} PROPOSITIONAL VARIABLES".format(len(props_list))
+print("THERE ARE {} PROPOSITIONAL VARIABLES".format(len(props_list)))
 
 props = collections.OrderedDict([(p,i+map_begin) for i,p in enumerate(props_list)])
 
@@ -166,4 +166,4 @@ if __name__ == "__main__":
         X = [parse_feature_to_dict(node.feats) for node in sentence.find()]
 
         for args in full_window(X,3):
-            print [v for k,v in props.items() if  k(*args)]
+            print([v for k,v in props.items() if  k(*args)])

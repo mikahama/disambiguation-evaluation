@@ -30,7 +30,7 @@ class ScoreSentenceByLinearRegressionOLD(Scoring):
 		# create a dataset with labels
 		X = []
 		Y = []
-		print "CREATING DATA SET"
+		print("CREATING DATA SET")
 		for ud,lang in zip(UD,train_langs):
 			#if lang == "sme":
 			for sentence in tqdm(ud.sentences):
@@ -47,7 +47,7 @@ class ScoreSentenceByLinearRegressionOLD(Scoring):
 						Y += [0]
 
 		# train the decision tree
-		print "TRAINING LINEAR REGRESSION"
+		print("TRAINING LINEAR REGRESSION")
 		#self.clf = LinearRegression()
 		#self.clf = GradientBoostingClassifier()
 		self.clf = LogisticRegression()

@@ -1126,4 +1126,4 @@ def off_by_m_test(n=12, m=2):
    for algorithm in range(1,4):
       t= Timer()
       eval('len(list(off_by_m_algorithm%d(%d,%d)))' % (algorithm, n, m))
-      print("Time for algorithm #%d: %s" % (algorithm, t.time()))
+      print(("Time for algorithm #%d: %s" % (algorithm, t.time())))

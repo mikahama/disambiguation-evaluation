@@ -134,7 +134,7 @@ def learn_from_UD_tree(input_filepath, encode_func=encode, include_reverse=False
 				token_dict[reps[c]] = True
 				total_trans += 1
 
-	print "total trans : {} unique trans : {} unique tokens {} -> {}".format(total_trans, len(model), len(token_dict), len(token_dict)**2)
+	print("total trans : {} unique trans : {} unique tokens {} -> {}".format(total_trans, len(model), len(token_dict), len(token_dict)**2))
 
 	return model
 
@@ -265,16 +265,16 @@ if __name__ == "__main__":
 				#score_to_reading_map[SCORE_FUNC(reading,[])] = info
 
 		try:
-			print "\n\n"
-			print "=" * 100
-			print "=" * 100
-			print "EXAMPLE {} : {}".format(count, " ".join(raw_sentence))
-			print "-" * 100
+			print("\n\n")
+			print("=" * 100)
+			print("=" * 100)
+			print("EXAMPLE {} : {}".format(count, " ".join(raw_sentence)))
+			print("-" * 100)
 			for k,v in sorted(score_to_reading_map)[::-1]:
-				print k
+				print(k)
 				for i,w in enumerate(v):
-					print "{0:30} {1}".format( raw_sentence[i], w )
-				print "-" * 100
+					print("{0:30} {1}".format( raw_sentence[i], w ))
+				print("-" * 100)
 		except:
 			pass
 
@@ -415,15 +415,15 @@ if __name__ == "__main__":
 				final_results += [match]
 
 				# print some info to show what is happening
-				print "SENTENCE : {}".format(" ".join(input))
+				print("SENTENCE : {}".format(" ".join(input)))
 
 				tmp = partial_encoded_readings
-				print "word 0: {}".format(tmp[0])
+				print("word 0: {}".format(tmp[0]))
 				for i,(cur,next) in enumerate(zip(tmp,tmp[1:])):
 					tran_exist = [1 if operator.add(*x) in VALID else 0 for x in itertools.product(cur,next)]
-					print "word {}: {} {}".format(i+1, next, tran_exist)
+					print("word {}: {} {}".format(i+1, next, tran_exist))
 
-				print "{} : ACC {} SCORES {} CORRECT {} CORRECT_IDX {}\n\n".format(
-					len(final_results), np.mean(np.asarray(final_results)), scores, match, correct_idx)
+				print("{} : ACC {} SCORES {} CORRECT {} CORRECT_IDX {}\n\n".format(
+					len(final_results), np.mean(np.asarray(final_results)), scores, match, correct_idx))
 
 #

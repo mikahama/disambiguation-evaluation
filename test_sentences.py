@@ -68,7 +68,7 @@ def __parse_spmf_line(line):
 			numbers, score = line.split(" -1 #SUP: ")
 			sid = []
 	except Exception as e:
-		print e
+		print(e)
 		return None
 	patterns = numbers.split("-1")
 	s = []
@@ -218,7 +218,9 @@ def give_all_possibilities(ud_sentence, lang="fin"):
 		sent.append([dict(t) for t in {tuple(d.items()) for d in forms}])
 	return sent
 
-
+def __give_all_possibilities(ud_sentence, lang="fin"):
+	#method was renamec, but it's still used elsewhere...
+	return give_all_possibilities(ud_sentence, lang)
 
 
 
@@ -227,9 +229,9 @@ def give_all_possibilities(ud_sentence, lang="fin"):
 def produce_tests():
 	ud = UD_collection(codecs.open("ud/fi-ud-train.conllu", encoding="utf-8"))
 	for sentence in ud.sentences[3:]:
-		print unicode(sentence)
+		print(unicode(sentence))
 		morphs = __give_all_possibilities(sentence)
-		print morphs
+		print(morphs)
 		quit()
 
 

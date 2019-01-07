@@ -143,7 +143,7 @@ if __name__ == "__main__":
 	from test_sentences import spmf_format_to_file, read_spmf_output, run_spmf_full
 	import operator
 	from tqdm import tqdm
-	from test_sentences import get_readings, __change_ud_morphology, __give_all_possibilities
+	from test_sentences import get_readings, __change_ud_morphology, give_all_possibilities
 	import itertools
 	from backward_map import bw_map
 	import sys
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 			sys.stdout = codecs.open("results/" + filename + ".log", "w", encoding="utf-8")
 			save_plot = True
 	else:
-		print "No arguments, using variables"
+		print("No arguments, using variables")
 
 	if args.pad_value == -1:
 		args.pad_value = None
@@ -250,7 +250,7 @@ if __name__ == "__main__":
 		mean = 0
 		pbar = tqdm(test_ud.sentences)
 		for sentence in pbar:
-			#all_readings = __give_all_possibilities(sentence, lang=test_lang)
+			#all_readings = give_all_possibilities(sentence, lang=test_lang)
 			all_readings = get_readings(sentence, lang=test_lang)
 			all_encoded = [IntListList(DictList(*word)) for word in all_readings]
 

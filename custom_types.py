@@ -321,11 +321,11 @@ class Results(object):
 			lambda x : IntListList(x).nested_len())
 		pattern_spans = self.score_dict.map_keys_to_list(
 			lambda x : len(x))
-		print "NUMBER OF PATTERNS : {}".format(len(self.patterns))
-		print "MAX PATTERN LENGTH : {}".format(np.max(pattern_lengths))
-		print "MEAN PATTERN LENGTH : {}".format(np.mean(pattern_lengths))
-		print "MIN PATTERN SPAN : {}".format(np.min(pattern_spans))
-		print "MAX PATTERN SPAN : {}".format(np.max(pattern_spans))
+		print(("NUMBER OF PATTERNS : {}".format(len(self.patterns))))
+		print(("MAX PATTERN LENGTH : {}".format(np.max(pattern_lengths))))
+		print(("MEAN PATTERN LENGTH : {}".format(np.mean(pattern_lengths))))
+		print(("MIN PATTERN SPAN : {}".format(np.min(pattern_spans))))
+		print(("MAX PATTERN SPAN : {}".format(np.max(pattern_spans))))
 
 	def calculate_gap_distribution(self,data,ungapped_pattern,idx,max_gap=1):
 		gapped_patterns = ungapped_pattern.all_gapped_versions(max_gap=max_gap)
@@ -390,57 +390,57 @@ if __name__ == "__main__":
 
 	# initializing dictlist
 	dl = DictList({"VerbType" : "Aux", "Voice" : "Act"}, {"POS" : "N*"})
-	print dl
+	print(dl)
 
 	# check IntListList casting
-	print IntListList( dl )
-	print IntListList( [[34, 56], [7], [], [45]] )
-	print IntListList( ((220, 56), (), (40,)) )
-	print IntListList( ((220, 56), (), (40,)) ).to_tuple()
+	print((IntListList( dl )))
+	print((IntListList( [[34, 56], [7], [], [45]] )))
+	print(IntListList( ((220, 56), (), (40,)) ))
+	print(IntListList( ((220, 56), (), (40,)) ).to_tuple())
 	nu = IntListList( ((220, 56), (), (40,)) ).to_numpy()
-	print nu
-	print IntListList(nu)
+	print(nu)
+	print(IntListList(nu))
 
 	# check DictList casting
-	print DictList( IntListList([[45, 20], [30]]) )
-	print DictList( ((220, 56), (), (40,)) )
-	print DictList( [[34, 56], [7], [], [45]] )
-	print DictList( [[34, 56], [7], [], [45]] ).to_tuple()
+	print(DictList( IntListList([[45, 20], [30]]) ))
+	print(DictList( ((220, 56), (), (40,)) ))
+	print(DictList( [[34, 56], [7], [], [45]] ))
+	print(DictList( [[34, 56], [7], [], [45]] ).to_tuple())
 
 	# check back and forth
-	print IntListList( DictList( [[34, 56], [7], [], [45]] ) )
+	print(IntListList( DictList( [[34, 56], [7], [], [45]] ) ))
 
 	# check contains
-	print IntListList([[3, 5], [3], [4, 6, 7]]).contains([[3, 5], [], [6]])
-	print IntListList([[3, 5], [3], [4, 6, 7]]).contains([[4,5], [], []])
+	print(IntListList([[3, 5], [3], [4, 6, 7]]).contains([[3, 5], [], [6]]))
+	print(IntListList([[3, 5], [3], [4, 6, 7]]).contains([[4,5], [], []]))
 
-	print IntListList(dl).contains(DictList({"VerbType" : "Aux"}))
+	print(IntListList(dl).contains(DictList({"VerbType" : "Aux"})))
 
-	print IntListList([[3, 5],[3],[4, 6, 7]]).insert_gaps([2,3])
+	print(IntListList([[3, 5],[3],[4, 6, 7]]).insert_gaps([2,3]))
 
-	print IntListList([[3, 5],[3],[4, 6, 7]]).insert_gaps([2,3]).to_tuple()
+	print(IntListList([[3, 5],[3],[4, 6, 7]]).insert_gaps([2,3]).to_tuple())
 
 	d = ResultDict([(4,5), (6,20), (7,6), (8,9), (5,10)])
-	print d.map_vals(lambda x : x ** 2)
-	print d.norm_vals(min_value=0.25,max_value=1.)
-	print d.prob_vals()
+	print(d.map_vals(lambda x : x ** 2))
+	print(d.norm_vals(min_value=0.25,max_value=1.))
+	print(d.prob_vals())
 
 	dd = ResultDict([(1,d),(2,d)])
-	print dd.map_vals(lambda x : x.prob_vals())
+	print(dd.map_vals(lambda x : x.prob_vals()))
 
-	print IntListList([[3, 5], [3], [4, 6, 7]]).all_gapped_versions(max_gap=3)
+	print(IntListList([[3, 5], [3], [4, 6, 7]]).all_gapped_versions(max_gap=3))
 
-	print ResultDict([(((4,), (5,6)), 5), (((3,), ()), 7)]).map_keys_to_list(IntListList)
+	print(ResultDict([(((4,), (5,6)), 5), (((3,), ()), 7)]).map_keys_to_list(IntListList))
 
-	print IntListList([[123]])[0]
+	print(IntListList([[123]])[0])
 
-	print IntListList([[3, 5], [3], [4, 6, 7]]).nested_len()
+	print(IntListList([[3, 5], [3], [4, 6, 7]]).nested_len())
 
-	print IntListList([[], [], [], [123], [], [3,4], [5,6], []]).remove_empty_margin_gaps()
+	print(IntListList([[], [], [], [123], [], [3,4], [5,6], []]).remove_empty_margin_gaps())
 
-	print IntListList([[123], [], [3,4], [5,6], [], [], [], ]).remove_empty_margin_gaps()
+	print(IntListList([[123], [], [3,4], [5,6], [], [], [], ]).remove_empty_margin_gaps())
 
-	print IntListList([[123], [], [], [34], [], [], [], [], [45]]).count_gaps()
+	print(IntListList([[123], [], [], [34], [], [], [], [], [45]]).count_gaps())
 
 	x = IntListList([[3,4],[5,6]]).to_numpy()
 	d = Dataset(keys=["input", "output"])

@@ -12,9 +12,9 @@ from uralicNLP.ud_tools import UD_collection
 # adding a dummy value to each itemset and an additional itemset containing the dummy value allows for patterns with gaps to be found
 
 def print_dict(d):
-    print json.dumps(
+    print(json.dumps(
         collections.OrderedDict([(str(k),str(v)) for k,v in d.items()]),
-        indent=4)
+        indent=4))
 
 def print_txt_file(fp):
     call(["cat", fp])
@@ -31,7 +31,7 @@ X = [
 for algorithm in ["BIDE+", "VMSP"]:
     for pad_value in [None, 2**16]:
 
-        print("ALGORITHM : ", algorithm, "PAD_VALUE : ", pad_value)
+        print(("ALGORITHM : ", algorithm, "PAD_VALUE : ", pad_value))
 
         res = run_spmf_full(
             X,
@@ -55,5 +55,5 @@ for algorithm in ["BIDE+", "VMSP"]:
 
         print("SCORE DICT : ")
         print_dict(res.score_dict)
-        print len(res.score_dict)
+        print(len(res.score_dict))
         print("\n")
