@@ -61,6 +61,7 @@ def split_sentences(sentences, split=0.9):
     test_sentences = [sentences[i] for i in np.where(labels==1)[0]]
     return train_sentences, test_sentences
 
+"""
 def get_random_labels(n, split=0.9, seed=689012349):
     np.random.seed(seed)
     n_train_sentences = int(n * split)
@@ -69,6 +70,17 @@ def get_random_labels(n, split=0.9, seed=689012349):
     labels = np.asarray(([0] * n_train_sentences) + ([1] * n_test_sentences))
     np.random.shuffle(labels)
     return np.where(labels==0)[0], np.where(labels==1)[0]
+"""
+
+def get_random_labels(n, split):
+    idx = np.argsort(np.random.rand(n))
+    split = np.cumsum((np.atleast_1d(split) * n).astype(np.int32))
+    if len(split) == 3:
+        return idx[:split[0]], idx[split[0]:split[1]], idx[split[1]:]
+    elif len(split) == 2:
+        return idx[:split[0]], idx[split[0]:]
+    else:
+        raise ValueError("SPLIT NOT SUPPORTED {}".format(split))
 
 # dataset then is a collection of target sentences and all possible readings where each word is an intlistlist of possiblities
 # how much does each reading have in common with target
@@ -146,7 +158,7 @@ def make_nn_dataset(d, maxlen=200):
 
 if __name__ == "__main__":
 
-    # train lang used to mine patterns
+    # evaluate sentences using an RNN
 
     from scoring import ScoreSentenceByLinearRegression
     from test_sentences import run_spmf_full
@@ -155,88 +167,65 @@ if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description='Run tests')
     arg_parser.add_argument('--train_lang',type=str, nargs='+', default=["sme"])
     arg_parser.add_argument('--test_lang', type=str, nargs='+', default=["sme"])
-    arg_parser.add_argument('--pad', type=int, default=True)
-    arg_parser.add_argument('--min-sup', type=int, default=20)
     arg_parser.add_argument('--seed', type=int, default=1234)
-    arg_parser.add_argument('--k', type=int, default=276)
     args = arg_parser.parse_args()
-    pad_value = 900 if args.pad else None
 
     assert len(args.test_lang) == 1
-
     np.random.seed(args.seed)
 
-    train_d = create_dataset(args.train_lang[0])
-    for lang in args.train_lang[1:]:
-        train_d += create_dataset(lang)
+    train_d = Dataset(keys=["target", "readings"])
+    valid_d = Dataset(keys=["target", "readings"])
+    test_d = Dataset(keys=["target", "readings"])
+    for lang in args.train_lang:
+        d = create_dataset(lang)
+        if lang in args.test_lang:
+            ridx, vidx, tidx = get_random_labels(len(d["target"]), (.8,.1,.1))
+            train_d += d.get_subset(ridx)
+            test_d += d.get_subset(tidx)
+            valid_d += d.get_subset(vidx)
+        else:
+            ridx, vidx = get_random_labels(len(d["target"]), (.9,.1))
+            train_d += d.get_subset(ridx)
+            valid_d += d.get_subset(vidx)
 
-    test_d = create_dataset(args.test_lang[0])
-    for lang in args.test_lang[1:]:
-        test_d += create_dataset(lang)
+    if not args.test_lang[0] in args.train_lang:
+        test_d = create_dataset(args.test_lang[0])
 
-    pattern_filepath = "PATTERNS_LANGS={}_PAD={}_MIN_SUP={}.npz".format(
-        args.train_lang, args.pad, args.min_sup)
 
-    if os.path.exists(pattern_filepath):
-        _, sid_dict = np.load(pattern_filepath)["data"]
-    else:
-        res = run_spmf_full(train_d["target"], min_sup=args.min_sup, save_results_to="results/tmp/trash_spmf_output.txt", temp_file="results/tmp/trash_tmp_spmf.txt", pad_value=pad_value)
-        np.savez(pattern_filepath, data=(res.score_dict, res.sid_dict))
-        sid_dict = res.sid_dict
+    print "TRAIN DATASET SIZE ({})".format(len(train_d["target"]))
+    print "TEST DATASET SIZE ({})".format(len(test_d["target"]))
+    print "VALID DATASET SIZE ({})".format(len(valid_d["target"]))
 
-    # train a linear regression model using mined patterns
-    train_idx, test_idx = get_random_labels(
-        len(test_d["target"]), 0.9, seed=args.seed)
+    import operator
+    from keras.models import Sequential
+    from keras import layers
+    from keras.preprocessing.sequence import pad_sequences
+    from keras.callbacks import ModelCheckpoint, EarlyStopping
 
-    # prune the sid_dict to only include patterns that occur in train_idx
-    sid_dict.prune(train_idx, top_k_support=args.k, min_pattern_items=2, min_pattern_length=2)
+    # create some test datasets
+    train_inputs, train_outputs = make_nn_dataset(train_d, maxlen=200)
+    valid_inputs, valid_outputs = make_nn_dataset(valid_d, maxlen=200)
 
-    print(("USING {} PATTERNS".format(len(sid_dict))))
+    num_classes = 224
+    embed_dim = 64
+    hidden_dim = 128
 
-    # create dataset to train linear regression
-    X = []
-    Y = []
-    for idx in tqdm(train_idx):
-        X += [sid_dict.pattern_vector(test_d["target"][idx])]
-        Y += [True]
-        wrong = random_reading(test_d["readings"][idx],2,100)
-        if wrong is not None:
-            X += [sid_dict.pattern_vector(wrong)]
-            Y += [False]
+    model = Sequential()
+    model.add(layers.Embedding(num_classes, embed_dim))
+    model.add(layers.LSTM(hidden_dim))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    s = ScoreSentenceByLinearRegression(sid_dict, X, Y)
+    print(model.summary())
 
-    # comparison test
-    n_results = []
-    p_results = []
-    for min_diff in tqdm(np.arange(1,20)):
-        n_res = []
-        for idx in tqdm(test_idx, leave=False):
-            wrong = random_reading(test_d["readings"][idx],min_diff,100)
-            if wrong is not None:
-                n_res += [(s.score(wrong) < 0.5)]
-            if min_diff == 1:
-                p_results += [(s.score(test_d["target"][idx]) > 0.5)]
+    callbacks = [EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
 
-        n_results += [np.mean(n_res)]
-        p_results = np.mean(p_results)
+    model.fit(x=train_inputs, y=train_outputs, epochs=50, batch_size=32, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
 
-    n_results = np.asarray(n_results)
+    test_inputs, test_outputs = make_nn_dataset(test_d, maxlen=200)
+    mean_accuracy = model.evaluate(test_inputs, test_outputs)[1]
 
-    print(p_results, n_results)
-
-    # rank test
-    results = []
-    diffs = [5, 10, 15, 20]
-    for idx in tqdm(test_idx):
-        rs = [test_d["target"][idx]]
-        for min_diff, max_diff in zip(diffs, diffs[1:]):
-            rs += [random_reading(test_d["readings"][idx],min_diff,max_diff)]
-        if all([r is not None for r in rs]):
-            ranks = np.argsort([s.score(r) for r in rs])
-            results += [kendall_tau_dist(ranks, np.arange(len(diffs))[::-1])]
-
-    print(np.mean(results))
+    print(mean_accuracy)
 
 
 
