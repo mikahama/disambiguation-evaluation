@@ -126,47 +126,60 @@ def create_dataset(lang, force=False):
 
 if __name__ == "__main__":
 
+    # train lang used to mine patterns
+
     from scoring import ScoreSentenceByLinearRegression
     from test_sentences import run_spmf_full
     import argparse
 
     arg_parser = argparse.ArgumentParser(description='Run tests')
-    arg_parser.add_argument('--lang', type=str, default="sme")
-    arg_parser.add_argument('--pad', type=bool, default=True)
+    arg_parser.add_argument('--train_lang',type=str, nargs='+', default=["sme"])
+    arg_parser.add_argument('--test_lang', type=str, nargs='+', default=["sme"])
+    arg_parser.add_argument('--pad', type=int, default=True)
     arg_parser.add_argument('--min-sup', type=int, default=20)
     arg_parser.add_argument('--seed', type=int, default=1234)
     arg_parser.add_argument('--k', type=int, default=276)
     args = arg_parser.parse_args()
     pad_value = 900 if args.pad else None
 
+    assert len(args.test_lang) == 1
+
     np.random.seed(args.seed)
 
-    d = create_dataset(args.lang)
+    train_d = create_dataset(args.train_lang[0])
+    for lang in args.train_lang[1:]:
+        train_d += create_dataset(lang)
 
-    pattern_filepath = "PATTERNS_PAD={}_MIN_SUP={}.npz".format(
-        args.pad, args.min_sup)
+    test_d = create_dataset(args.test_lang[0])
+    for lang in args.test_lang[1:]:
+        test_d += create_dataset(lang)
+
+    pattern_filepath = "PATTERNS_LANGS={}_PAD={}_MIN_SUP={}.npz".format(
+        args.train_lang, args.pad, args.min_sup)
 
     if os.path.exists(pattern_filepath):
         _, sid_dict = np.load(pattern_filepath)["data"]
     else:
-        res = run_spmf_full(d["target"], min_sup=args.min_sup, save_results_to="results/tmp/trash_spmf_output.txt", temp_file="results/tmp/trash_tmp_spmf.txt", pad_value=pad_value)
+        res = run_spmf_full(train_d["target"], min_sup=args.min_sup, save_results_to="results/tmp/trash_spmf_output.txt", temp_file="results/tmp/trash_tmp_spmf.txt", pad_value=pad_value)
         np.savez(pattern_filepath, data=(res.score_dict, res.sid_dict))
         sid_dict = res.sid_dict
 
+    # train a linear regression model using mined patterns
     train_idx, test_idx = get_random_labels(
-        len(d["target"]), 0.9, seed=args.seed)
+        len(test_d["target"]), 0.9, seed=args.seed)
 
     # prune the sid_dict to only include patterns that occur in train_idx
     sid_dict.prune(train_idx, top_k_support=args.k, min_pattern_items=2, min_pattern_length=2)
 
     print(("USING {} PATTERNS".format(len(sid_dict))))
 
+    # create dataset to train linear regression
     X = []
     Y = []
     for idx in tqdm(train_idx):
-        X += [sid_dict.pattern_vector(d["target"][idx])]
+        X += [sid_dict.pattern_vector(test_d["target"][idx])]
         Y += [True]
-        wrong = random_reading(d["readings"][idx],2,100)
+        wrong = random_reading(test_d["readings"][idx],2,100)
         if wrong is not None:
             X += [sid_dict.pattern_vector(wrong)]
             Y += [False]
@@ -179,11 +192,11 @@ if __name__ == "__main__":
     for min_diff in tqdm(np.arange(1,20)):
         n_res = []
         for idx in tqdm(test_idx, leave=False):
-            wrong = random_reading(d["readings"][idx],min_diff,100)
+            wrong = random_reading(test_d["readings"][idx],min_diff,100)
             if wrong is not None:
                 n_res += [(s.score(wrong) < 0.5)]
             if min_diff == 1:
-                p_results += [(s.score(d["target"][idx]) > 0.5)]
+                p_results += [(s.score(test_d["target"][idx]) > 0.5)]
 
         n_results += [np.mean(n_res)]
         p_results = np.mean(p_results)
@@ -196,9 +209,9 @@ if __name__ == "__main__":
     results = []
     diffs = [5, 10, 15, 20]
     for idx in tqdm(test_idx):
-        rs = [d["target"][idx]]
+        rs = [test_d["target"][idx]]
         for min_diff, max_diff in zip(diffs, diffs[1:]):
-            rs += [random_reading(d["readings"][idx],min_diff,max_diff)]
+            rs += [random_reading(test_d["readings"][idx],min_diff,max_diff)]
         if all([r is not None for r in rs]):
             ranks = np.argsort([s.score(r) for r in rs])
             results += [kendall_tau_dist(ranks, np.arange(len(diffs))[::-1])]
