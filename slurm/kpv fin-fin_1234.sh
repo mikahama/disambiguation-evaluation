@@ -1,7 +1,7 @@
 #!/bin/bash -l
 # created: Nov 22, 2017 2:31 PM
 # author: mikahama
-#SBATCH -J TRAIN-TEST-SEED
+#SBATCH -J kpv fin-fin-1234
 #SBATCH --constraint="snb|hsw"
 #SBATCH -p serial
 #SBATCH --mem-per-cpu=4096
@@ -19,6 +19,6 @@ module unload hfst
 cd /homeappl/home/mikahama/disambiguation-evaluation
 
 source venv/bin/activate
-python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED > results/TRAIN-TEST-SEED.txt
+python test_rnn_script.py --train_lang kpv fin --test_lang fin --seed 1234 > results/kpv fin-fin-1234.txt
 
 used_slurm_resources.bash
