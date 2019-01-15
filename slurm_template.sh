@@ -19,6 +19,6 @@ module unload hfst
 cd /homeappl/home/mikahama/disambiguation-evaluation
 
 source venv/bin/activate
-python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED > results/TRAIN-TEST-SEED.txt
+python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED > "results/TRAIN-TEST-SEED.txt"
 
 used_slurm_resources.bash
