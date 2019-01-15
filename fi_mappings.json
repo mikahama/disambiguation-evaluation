@@ -23,7 +23,8 @@
         "Ter":"Ter",
         "Lat":"Lat",
         "Loc":"Loc",
-        "Temp":"Temp"
+        "Temp":"Temp",
+        "Com": "Com"
     },  
     "Connegative": {
         "ConNeg": "Yes"
