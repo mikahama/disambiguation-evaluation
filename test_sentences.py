@@ -219,7 +219,7 @@ def give_all_possibilities(ud_sentence, lang="fin"):
 	return sent
 
 def __give_all_possibilities(ud_sentence, lang="fin"):
-	#method was renamec, but it's still used elsewhere...
+	#method was renamed, but it's still used elsewhere...
 	return give_all_possibilities(ud_sentence, lang)
 
 

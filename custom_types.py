@@ -9,13 +9,20 @@ from fw_master_map import fw_map
 from backward_map import bw_map
 from maps import ud_pos
 from tqdm import tqdm
+import json
 
 from uralicNLP.ud_tools import UD_sentence
+
+fi_mappings = json.load(open("fi_mappings.json", "r"))
 
 def parse_feature_to_dict(s):
 	if s == "_":
 		return {}
-	return {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
+	d = {_.split("=")[0] : _.split("=")[1] for _ in s.split("|")}
+	for k in d.keys():
+		if k not in fi_mappings:
+			del d[k]
+	return d
 
 def parse_feature(s):
 	if s == "_":

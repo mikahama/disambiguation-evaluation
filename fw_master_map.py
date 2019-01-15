@@ -118,6 +118,10 @@ fw_map = collections.OrderedDict({
         "Ill": [
             14, 
             26
+        ],
+        "Add": [
+            14, 
+            26
         ], 
         "Ine": [
             15, 
@@ -530,7 +534,11 @@ fw_map = collections.OrderedDict({
         "Proh": [
             8, 
             124
-        ]
+        ],
+        "Qot":[
+            9, 
+            223
+        ],
     }, 
     "NameType": {
         "Giv": [
@@ -859,6 +867,10 @@ fw_map = collections.OrderedDict({
             9, 
             198
         ], 
+        "Int,Rel": [
+            9, 
+            198
+        ],
         "Tot": [
             10, 
             199

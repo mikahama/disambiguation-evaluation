@@ -24,7 +24,8 @@
         "Lat":"Lat",
         "Loc":"Loc",
         "Temp":"Temp",
-        "Com": "Com"
+        "Com": "Com",
+        "Add": "Ill"
     },  
     "Connegative": {
         "ConNeg": "Yes"
@@ -47,7 +48,8 @@
         "Cond": "Cnd", 
         "Imprt": "Imp", 
         "Ind": "Ind", 
-        "Pot": "Pot"
+        "Pot": "Pot",
+        "Qot": "Qot"
     },  
     "Number": {
         "Pl": "Plur", 
