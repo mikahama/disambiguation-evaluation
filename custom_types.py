@@ -186,7 +186,7 @@ class IntListList(list):
 		return ResultDict(gappedversions)
 
 class Dataset(collections.OrderedDict):
-	def __init__(self, keys=None, filepath=None):
+	def __init__(self, keys=None, filepath=None, items=None):
 		if keys is not None:
 			items = []
 			for k in keys:
@@ -194,6 +194,8 @@ class Dataset(collections.OrderedDict):
 			super(Dataset,self).__init__(items)
 		elif filepath is not None:
 			self = self.load(filepath)
+		elif items is not None:
+			super(Dataset,self).__init__(items)
 		else:
 			raise ValueError("MUST PROVIDE KEYS OR FILEPATH")
 	def add_example(self, example, ignore_unused=True):
@@ -220,6 +222,11 @@ class Dataset(collections.OrderedDict):
 		for k in self.keys():
 			self[k].extend(d[k])
 		return self
+	def get_subset(self,idx):
+		items = []
+		for k,v in self.items():
+			items.append((k,[v[ii] for ii in idx]))
+		return Dataset(items=items)
 	def modify_vals(self, keys, func):
 		keys = np.atleast_1d(keys)
 		for k in keys:
