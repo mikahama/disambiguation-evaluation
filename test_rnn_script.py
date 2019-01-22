@@ -2,9 +2,11 @@
 new tests
 """
 
+import itertools
 import numpy as np
 np.warnings.filterwarnings('ignore')
 import codecs
+import random
 import os
 from custom_types import IntListList, DictList, Dataset
 from uralicNLP.ud_tools import UD_collection
@@ -124,8 +126,10 @@ def create_dataset(lang, force=False):
         for i, word in enumerate(give_all_possibilities(sentence, lang=lang)):
             words = []
             for x in IntListList(word, force_dict=True):
-                inter = set(x).intersection(set(target[i]))
-                words.append((tuple(sorted(x)), len(target[i]) - len(inter)))
+                # THIS IS WRONG !!
+                #inter = set(x).intersection(set(target[i]))
+                diff = len(set(x).symmetric_difference(set(target[i])))
+                words.append((tuple(sorted(x)), diff))
             words.append((tuple(sorted(target[i])), 0))
             readings.append(OrderedDict(words))
         d.add_example({
@@ -139,6 +143,7 @@ def create_dataset(lang, force=False):
 def make_nn_dataset(d, maxlen=200):
     inputs = []
     outputs = []
+    all_inputs = {i : [] for i in range(11)}
 
     for sentence, reading in zip(d["target"], d["readings"]):
         input = reduce(operator.add, [x+[223] for x in sentence])
@@ -150,11 +155,58 @@ def make_nn_dataset(d, maxlen=200):
             inputs.append( bad_input )
             outputs.append( 0 )
 
+        # more comprehensive inputs
+        all_inputs[0].append( input )
+        for i in range(1,11):
+            bad_input = random_reading(reading,i,i)
+            if bad_input is not None:
+                bad_input = reduce(operator.add, [x+[223] for x in bad_input])
+                all_inputs[i].append(bad_input)
+
+    all_inputs = {k:pad_sequences(v,maxlen) for k,v in all_inputs.items()}
     inputs = pad_sequences(inputs, maxlen)
     outputs = np.array(outputs)
     order = np.argsort(np.random.rand(len(inputs)))
 
-    return inputs[order], outputs[order]
+    return inputs[order], outputs[order], all_inputs
+
+def make_comparison_dataset(d, maxlen, n=1000, n_readings=10):
+    import random
+
+    def to_vector(x):
+        flatx = reduce(operator.add, [sorted(list(xx))+[223] for xx in x])
+        return pad_sequences([flatx],maxlen=maxlen)[0]
+
+    def random_reading(readings):
+        reading, diff = zip(*[random.choice(list(w.items())) for w in readings])
+        return to_vector(reading), int(np.sum(list(diff)))
+
+    sents = {0 : []}
+    for sentence, readings in zip(d["target"], d["readings"]):
+
+        sents[0].append( to_vector(sentence) )
+        for i in range(n_readings):
+            reading, diff = random_reading(readings)
+            diff = (diff // 5) + 1 # CREATING BINS
+            if not diff in sents:
+                sents[diff] = []
+            sents[diff].append(reading)
+
+    # NOTE : this way each distance combination is equally likely
+    idx = list(itertools.combinations(list(sents.keys()),2))
+
+    inputs_a = []
+    inputs_b = []
+    outputs = []
+    ids = []
+    for i in range(n):
+        a,b = random.sample(random.choice(idx),2)
+        inputs_a.append( random.choice(sents[a]) )
+        inputs_b.append( random.choice(sents[b]) )
+        outputs.append( int(a < b) )
+        ids.append((a,b))
+    inputs = [np.array(inputs_a), np.array(inputs_b)]
+    return inputs, np.array(outputs), np.array(ids)
 
 if __name__ == "__main__":
 
@@ -163,11 +215,25 @@ if __name__ == "__main__":
     from scoring import ScoreSentenceByLinearRegression
     from test_sentences import run_spmf_full
     import argparse
+    import operator
+    import pickle
+    from keras.models import Sequential
+    from keras import layers
+    from keras.models import Model
+    from keras.preprocessing.sequence import pad_sequences
+    from keras.callbacks import ModelCheckpoint, EarlyStopping
+    from keras.utils import Sequence
 
     arg_parser = argparse.ArgumentParser(description='Run tests')
     arg_parser.add_argument('--train_lang',type=str, nargs='+', default=["sme"])
     arg_parser.add_argument('--test_lang', type=str, nargs='+', default=["sme"])
     arg_parser.add_argument('--seed', type=int, default=1234)
+    arg_parser.add_argument('--force', type=int, default=0)
+    arg_parser.add_argument('--num_epochs', type=int, default=50)
+    arg_parser.add_argument('--maxlen', type=int, default=200)
+    arg_parser.add_argument('--batch_size', type=int, default=32)
+    arg_parser.add_argument('--model_filepath', type=str, required=True)
+    arg_parser.add_argument('--result_filepath', type=str, required=True)
     args = arg_parser.parse_args()
 
     assert len(args.test_lang) == 1
@@ -177,7 +243,7 @@ if __name__ == "__main__":
     valid_d = Dataset(keys=["target", "readings"])
     test_d = Dataset(keys=["target", "readings"])
     for lang in args.train_lang:
-        d = create_dataset(lang)
+        d = create_dataset(lang, force=args.force)
         if lang in args.test_lang:
             ridx, vidx, tidx = get_random_labels(len(d["target"]), (.8,.1,.1))
             train_d += d.get_subset(ridx)
@@ -189,23 +255,31 @@ if __name__ == "__main__":
             valid_d += d.get_subset(vidx)
 
     if not args.test_lang[0] in args.train_lang:
-        test_d = create_dataset(args.test_lang[0])
+        test_d = create_dataset(args.test_lang[0], force=args.force)
 
 
     print "TRAIN DATASET SIZE ({})".format(len(train_d["target"]))
     print "TEST DATASET SIZE ({})".format(len(test_d["target"]))
     print "VALID DATASET SIZE ({})".format(len(valid_d["target"]))
 
-    import operator
-    from keras.models import Sequential
-    from keras import layers
-    from keras.preprocessing.sequence import pad_sequences
-    from keras.callbacks import ModelCheckpoint, EarlyStopping
-
+    # OLD MODEL
+    """
     # create some test datasets
-    train_inputs, train_outputs = make_nn_dataset(train_d, maxlen=200)
-    valid_inputs, valid_outputs = make_nn_dataset(valid_d, maxlen=200)
+    train_inputs, train_outputs, all_train = make_nn_dataset(
+        train_d, maxlen=args.maxlen)
+    valid_inputs, valid_outputs, all_valid = make_nn_dataset(
+        valid_d, maxlen=args.maxlen)
+    test_inputs, test_outputs, all_test = make_nn_dataset(
+        test_d, maxlen=args.maxlen)
 
+    print "TRAIN LABELS {}".format(np.bincount(train_outputs.flatten()))
+    print "VALID LABELS {}".format(np.bincount(valid_outputs.flatten()))
+
+    print {k:len(v) for k,v in all_train.items()}
+    print {k:len(v) for k,v in all_valid.items()}
+    print {k:len(v) for k,v in all_test.items()}
+
+    # normal model
     num_classes = 224
     embed_dim = 64
     hidden_dim = 128
@@ -218,14 +292,88 @@ if __name__ == "__main__":
 
     print(model.summary())
 
-    callbacks = [EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
+    callbacks = [EarlyStopping(monitor='val_acc', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
 
-    model.fit(x=train_inputs, y=train_outputs, epochs=50, batch_size=32, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
+    model.fit(x=train_inputs, y=train_outputs, epochs=5, batch_size=32, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
 
-    test_inputs, test_outputs = make_nn_dataset(test_d, maxlen=200)
-    mean_accuracy = model.evaluate(test_inputs, test_outputs)[1]
+    #mean_accuracy = model.evaluate(test_inputs, test_outputs)[1]
 
-    print(mean_accuracy)
+
+    # test with different distances and report mean accuracy
+    for i in range(11):
+        print(i, np.mean(model.predict(all_test[i]) > (0.5 * (i==0))))
+    """
+
+    # NEW MODEL
+    class DataGenerator(Sequence):
+
+        def __init__(self, raw_data, batch_size=32, maxlen=200):
+            self.raw_data = raw_data
+            self.epoch = 0
+            self.maxlen = maxlen
+            self.batch_size = batch_size
+            self.x, self.y, _ = make_comparison_dataset(
+                self.raw_data, self.maxlen, n=30*self.batch_size)
+
+        def __len__(self):
+            return int(np.ceil(len(self.y) / float(self.batch_size)))
+
+        def __getitem__(self, idx):
+            batch_x = [xx[idx * self.batch_size:(idx + 1) * self.batch_size] for xx in self.x]
+            batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
+            return batch_x, batch_y
+
+        def on_epoch_end(self):
+            self.x, self.y, _ = make_comparison_dataset(
+                self.raw_data, self.maxlen, n=30*self.batch_size)
+            self.epoch += 1
+
+    num_classes = 224
+    embed_dim = 64
+    hidden_dim = 128
+
+    sentence_a = layers.Input(shape=(None,))
+    sentence_b = layers.Input(shape=(None,))
+
+    shared_embedding = layers.Embedding(num_classes, embed_dim)
+    shared_lstm = layers.LSTM(hidden_dim)
+
+    a = shared_embedding(sentence_a)
+    b = shared_embedding(sentence_b)
+    a = shared_lstm(a)
+    b = shared_lstm(b)
+
+    merged_vector = layers.concatenate([a, b], axis=-1)
+    predictions = layers.Dense(1, activation='sigmoid')(merged_vector)
+
+    model = Model(inputs=[sentence_a, sentence_b], outputs=predictions)
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    callbacks = [EarlyStopping(monitor='val_acc', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
+
+    valid_inputs,valid_outputs,_ = make_comparison_dataset(valid_d, args.maxlen, n=100)
+    data_generator = DataGenerator(
+        train_d, batch_size=args.batch_size, maxlen=args.maxlen)
+    model.fit_generator(data_generator, epochs=args.num_epochs, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
+
+    # save the model for training
+    model.save(args.model_filepath)
+
+    results = {}
+    test_inputs, test_outputs, test_ids = make_comparison_dataset(
+        test_d, args.maxlen, n=10000, n_readings=10)
+
+    preds = model.predict(test_inputs).flatten()
+    for target, pred, ids in zip(test_outputs, preds, test_ids):
+        ids = repr(tuple(sorted(list(ids))))
+        if not ids in results:
+            results[ids] = []
+        results[ids].append( int(np.round(pred) == target) )
+
+    # write these results to a json
+    import json
+    with open(args.result_filepath, 'w') as outfile:
+        json.dump(results, outfile)
 
 
 
