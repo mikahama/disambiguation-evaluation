@@ -19,7 +19,7 @@ for train_lang, test_lang in langs:
 		test = test_lang
 	output = template.replace("TRAIN", train).replace("TEST", test)
 	output = output.replace("SEED", str(seed))
-	f = open("slurm/" + train + "-" + test + "_" + str(seed) + ".sh", "w")
+	f = open("slurm/" + train.replace(" ","_") + "-" + test + "_" + str(seed) + ".sh", "w")
 	f.write(output)
 	f.close()
 

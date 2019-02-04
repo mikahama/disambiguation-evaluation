@@ -1,11 +1,11 @@
 #!/bin/bash -l
 # created: Nov 22, 2017 2:31 PM
 # author: mikahama
-#SBATCH -J TRAIN-TEST-SEED
+#SBATCH -J "TRAIN-TEST-SEED"
 #SBATCH --constraint="snb|hsw"
 #SBATCH -p serial
 #SBATCH --mem-per-cpu=4096
-#SBATCH -n 4
+#SBATCH -n 8
 #SBATCH -t 70:00:00
 #SBATCH --mail-type=END
 #SBATCH --mail-user=mika.hamalainen@helsinki.fi
@@ -19,6 +19,9 @@ module unload hfst
 cd /homeappl/home/mikahama/disambiguation-evaluation
 
 source venv/bin/activate
-python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED > "results/TRAIN-TEST-SEED.txt"
+for i in {1..10}
+do
+   python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED --model_filepath "models/TRAIN-TEST-SEED_$i" --result_filepath "results/TRAIN-TEST-SEED_$i"
+done
 
 used_slurm_resources.bash

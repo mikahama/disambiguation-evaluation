@@ -1,11 +1,11 @@
 #!/bin/bash -l
 # created: Nov 22, 2017 2:31 PM
 # author: mikahama
-#SBATCH -J kpv-est-1234
+#SBATCH -J "kpv-est-1234"
 #SBATCH --constraint="snb|hsw"
 #SBATCH -p serial
 #SBATCH --mem-per-cpu=4096
-#SBATCH -n 4
+#SBATCH -n 8
 #SBATCH -t 70:00:00
 #SBATCH --mail-type=END
 #SBATCH --mail-user=mika.hamalainen@helsinki.fi
@@ -19,6 +19,9 @@ module unload hfst
 cd /homeappl/home/mikahama/disambiguation-evaluation
 
 source venv/bin/activate
-python test_rnn_script.py --train_lang kpv --test_lang est --seed 1234 > "results/kpv-est-1234.txt"
+for i in {1..10}
+do
+   python test_rnn_script.py --train_lang kpv --test_lang est --seed 1234 --model_filepath "models/kpv-est-1234_$i" --result_filepath "results/kpv-est-1234_$i"
+done
 
 used_slurm_resources.bash
