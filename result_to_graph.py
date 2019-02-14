@@ -12,7 +12,7 @@ lang = ["kpv", "sme", "fin", "est", "myv"]
 
 train_langs = [" ".join(x) for x in itertools.product(lang, lang)] + lang
 
-with PdfPages('results_feb_7_2019.pdf') as pdf:
+with PdfPages('results_feb_7_2019_grouped.pdf') as pdf:
 
     for test_lang in lang:
 
@@ -24,7 +24,7 @@ with PdfPages('results_feb_7_2019.pdf') as pdf:
 
         data = {}
         for tl in train_langs:
-            valid_paths = [p for p in paths if tl in p]
+            valid_paths = [p for p in paths if os.path.basename(p).startswith(tl + "-")]
             if len(valid_paths) > 0:
                 data[tl] = {}
             for path in valid_paths:
@@ -35,8 +35,6 @@ with PdfPages('results_feb_7_2019.pdf') as pdf:
                         if np.all(np.array(list(k)) < 6):
                             data[tl][k] = data[tl].get(k,[]) + [np.mean(v)]
 
-
-
         plt.figure(num=None, figsize=(20, 8), dpi=80, facecolor='w', edgecolor='k')
 
         width = 0.1
@@ -45,16 +43,16 @@ with PdfPages('results_feb_7_2019.pdf') as pdf:
             keys, values = zip(*sorted(v.items()))
             x = np.arange(len(values))
 
-            plt.bar(x+(i-4)*width, [np.mean(_) for _ in values], width=width, align='center', label=k, alpha=0.7)
+            #plt.bar(x+(i-4)*width, [np.mean(_) for _ in values], width=width, align='center', label=k, alpha=0.7)
 
-            """
+
             if test_lang == k:
                 plt.bar(x+(i-4)*width, [np.mean(_) for _ in values], width=width, align='center', label=k, color='blue')
             elif test_lang in k:
                 plt.bar(x+(i-4)*width, [np.mean(_) for _ in values], width=width, align='center', label=k, color='blue', alpha=0.3)
             else:
                 plt.bar(x+(i-4)*width, [np.mean(_) for _ in values], width=width, align='center', label=k, color='lightgray')
-            """
+
 
         plt.legend()
         plt.title(test_lang)

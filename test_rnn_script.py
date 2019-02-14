@@ -1,5 +1,10 @@
 """
 new tests
+('kpv', 189)
+('myv', 1550)
+('sme', 3122)
+('fin', 13772)
+('est', 23564)
 """
 
 import itertools
@@ -87,6 +92,7 @@ def get_random_labels(n, split):
 # dataset then is a collection of target sentences and all possible readings where each word is an intlistlist of possiblities
 # how much does each reading have in common with target
 
+"""
 def random_reading(readings, tmin, tmax):
     ll = [r.values() for r in readings]
     pad = np.max(list(map(len,ll)))
@@ -112,6 +118,7 @@ def random_reading(readings, tmin, tmax):
     ss = np.sum([z[i,j] for i,j in idx.items()])
     assert (ss >= tmin) & (ss <= tmax)
     return IntListList([r.keys()[idx.get(i,np.argmax(z[i]==0))] for i,r in enumerate(readings)])
+"""
 
 def create_dataset(lang, force=False):
     sentences = get_sentences(languages[lang].values())
@@ -120,22 +127,28 @@ def create_dataset(lang, force=False):
         return Dataset(filepath=filepath)
 
     d = Dataset(["target", "readings"])
+    max_diffs = []
     for sentence in tqdm(sentences):
         target = IntListList(sentence)
         readings = []
+        max_diff = 0
         for i, word in enumerate(give_all_possibilities(sentence, lang=lang)):
-            words = []
+            words = [(tuple(sorted(target[i])), 0)]
+            diffs = [0]
             for x in IntListList(word, force_dict=True):
-                # THIS IS WRONG !!
-                #inter = set(x).intersection(set(target[i]))
                 diff = len(set(x).symmetric_difference(set(target[i])))
                 words.append((tuple(sorted(x)), diff))
-            words.append((tuple(sorted(target[i])), 0))
+                diffs.append(diff)
             readings.append(OrderedDict(words))
+            max_diff += np.max(diffs)
         d.add_example({
             "target" : IntListList(sentence),
             "readings" : readings
         })
+        max_diffs.append( max_diff )
+
+    # to visualize max diff distribution
+    #print("[" + ", ".join(list(map(str, np.bincount(max_diffs)))) + "]")
 
     d.save(filepath)
     return d
@@ -170,7 +183,7 @@ def make_nn_dataset(d, maxlen=200):
 
     return inputs[order], outputs[order], all_inputs
 
-def make_comparison_dataset(d, maxlen, n=1000, n_readings=10):
+def make_comparison_dataset(d, maxlen, n=1000, n_readings=10, binsize=10, maxbin=5):
     import random
 
     def to_vector(x):
@@ -187,13 +200,14 @@ def make_comparison_dataset(d, maxlen, n=1000, n_readings=10):
         sents[0].append( to_vector(sentence) )
         for i in range(n_readings):
             reading, diff = random_reading(readings)
-            diff = (diff // 5) + 1 # CREATING BINS
+            diff = (diff // binsize) + 1 # CREATING BINS
             if not diff in sents:
                 sents[diff] = []
             sents[diff].append(reading)
 
     # NOTE : this way each distance combination is equally likely
-    idx = list(itertools.combinations(list(sents.keys()),2))
+    #idx = list(itertools.combinations(list(sents.keys()),2))
+    idx = list(itertools.combinations(range(maxbin),2))
 
     inputs_a = []
     inputs_b = []
@@ -211,6 +225,9 @@ def make_comparison_dataset(d, maxlen, n=1000, n_readings=10):
 if __name__ == "__main__":
 
     # evaluate sentences using an RNN
+    # print the size of each language
+    #for lang in ["kpv", "myv", "sme", "fin", "est"]:
+    #    print( lang, len(get_sentences(languages[lang].values())) )
 
     from scoring import ScoreSentenceByLinearRegression
     from test_sentences import run_spmf_full
@@ -223,6 +240,7 @@ if __name__ == "__main__":
     from keras.preprocessing.sequence import pad_sequences
     from keras.callbacks import ModelCheckpoint, EarlyStopping
     from keras.utils import Sequence
+    from keras.models import load_model
 
     arg_parser = argparse.ArgumentParser(description='Run tests')
     arg_parser.add_argument('--train_lang',type=str, nargs='+', default=["sme"])
@@ -234,6 +252,8 @@ if __name__ == "__main__":
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--model_filepath', type=str, required=True)
     arg_parser.add_argument('--result_filepath', type=str, required=True)
+    arg_parser.add_argument('--binsize', type=int, default=10)
+    arg_parser.add_argument('--maxbin', type=int, default=5)
     args = arg_parser.parse_args()
 
     assert len(args.test_lang) == 1
@@ -241,26 +261,16 @@ if __name__ == "__main__":
 
     train_d = Dataset(keys=["target", "readings"])
     valid_d = Dataset(keys=["target", "readings"])
-    test_d = Dataset(keys=["target", "readings"])
     for lang in args.train_lang:
-        d = create_dataset(lang, force=args.force)
-        if lang in args.test_lang:
-            ridx, vidx, tidx = get_random_labels(len(d["target"]), (.8,.1,.1))
-            train_d += d.get_subset(ridx)
-            test_d += d.get_subset(tidx)
-            valid_d += d.get_subset(vidx)
-        else:
-            ridx, vidx = get_random_labels(len(d["target"]), (.9,.1))
-            train_d += d.get_subset(ridx)
-            valid_d += d.get_subset(vidx)
+        train_d += Dataset(filepath="DATASET_SPLIT_TRAIN_{}.npz".format(lang))
+        valid_d += Dataset(filepath="DATASET_SPLIT_VALID_{}.npz".format(lang))
 
-    if not args.test_lang[0] in args.train_lang:
-        test_d = create_dataset(args.test_lang[0], force=args.force)
-
+    test_d = Dataset(
+        filepath="DATASET_SPLIT_TEST_{}.npz".format(args.test_lang[0]))
 
     print "TRAIN DATASET SIZE ({})".format(len(train_d["target"]))
-    print "TEST DATASET SIZE ({})".format(len(test_d["target"]))
     print "VALID DATASET SIZE ({})".format(len(valid_d["target"]))
+    print "TEST DATASET SIZE ({})".format(len(test_d["target"]))
 
     # OLD MODEL
     """
@@ -313,7 +323,7 @@ if __name__ == "__main__":
             self.maxlen = maxlen
             self.batch_size = batch_size
             self.x, self.y, _ = make_comparison_dataset(
-                self.raw_data, self.maxlen, n=30*self.batch_size)
+                self.raw_data, self.maxlen, n=30*self.batch_size, binsize=args.binsize, maxbin=maxbin)
 
         def __len__(self):
             return int(np.ceil(len(self.y) / float(self.batch_size)))
@@ -325,43 +335,49 @@ if __name__ == "__main__":
 
         def on_epoch_end(self):
             self.x, self.y, _ = make_comparison_dataset(
-                self.raw_data, self.maxlen, n=30*self.batch_size)
+                self.raw_data, self.maxlen, n=30*self.batch_size, binsize=args.binsize, maxbin=maxbin)
             self.epoch += 1
 
-    num_classes = 224
-    embed_dim = 64
-    hidden_dim = 128
+    if not os.path.exists(args.model_filepath):
 
-    sentence_a = layers.Input(shape=(None,))
-    sentence_b = layers.Input(shape=(None,))
+        num_classes = 224
+        embed_dim = 64
+        hidden_dim = 128
 
-    shared_embedding = layers.Embedding(num_classes, embed_dim)
-    shared_lstm = layers.LSTM(hidden_dim)
+        sentence_a = layers.Input(shape=(None,))
+        sentence_b = layers.Input(shape=(None,))
 
-    a = shared_embedding(sentence_a)
-    b = shared_embedding(sentence_b)
-    a = shared_lstm(a)
-    b = shared_lstm(b)
+        shared_embedding = layers.Embedding(num_classes, embed_dim)
+        shared_lstm = layers.LSTM(hidden_dim)
 
-    merged_vector = layers.concatenate([a, b], axis=-1)
-    predictions = layers.Dense(1, activation='sigmoid')(merged_vector)
+        a = shared_embedding(sentence_a)
+        b = shared_embedding(sentence_b)
+        a = shared_lstm(a)
+        b = shared_lstm(b)
 
-    model = Model(inputs=[sentence_a, sentence_b], outputs=predictions)
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        merged_vector = layers.concatenate([a, b], axis=-1)
+        predictions = layers.Dense(1, activation='sigmoid')(merged_vector)
 
-    callbacks = [EarlyStopping(monitor='val_acc', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
+        model = Model(inputs=[sentence_a, sentence_b], outputs=predictions)
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    valid_inputs,valid_outputs,_ = make_comparison_dataset(valid_d, args.maxlen, n=100)
-    data_generator = DataGenerator(
-        train_d, batch_size=args.batch_size, maxlen=args.maxlen)
-    model.fit_generator(data_generator, epochs=args.num_epochs, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
+        callbacks = [EarlyStopping(monitor='val_acc', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
 
-    # save the model for training
-    model.save(args.model_filepath)
+        valid_inputs,valid_outputs,_ = make_comparison_dataset(valid_d, args.maxlen, n=100, binsize=args.binsize, maxbin=maxbin)
+        data_generator = DataGenerator(
+            train_d, batch_size=args.batch_size, maxlen=args.maxlen)
+        model.fit_generator(data_generator, epochs=args.num_epochs, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
+
+        # save the model for training
+        model.save(args.model_filepath)
+
+    else:
+        print("LOADING PRETRAINED MODEL")
+        model = load_model(args.model_filepath)
 
     results = {}
     test_inputs, test_outputs, test_ids = make_comparison_dataset(
-        test_d, args.maxlen, n=10000, n_readings=10)
+        test_d, args.maxlen, n=10000, n_readings=10, binsize=args.binsize, maxbin=maxbin)
 
     preds = model.predict(test_inputs).flatten()
     for target, pred, ids in zip(test_outputs, preds, test_ids):
@@ -370,8 +386,12 @@ if __name__ == "__main__":
             results[ids] = []
         results[ids].append( int(np.round(pred) == target) )
 
-    # write these results to a json
+    print(np.bincount(np.round(preds).astype(np.int32)))
+    print(np.bincount(test_outputs))
+
     import json
+    print(json.dumps({k : np.mean(v) for k,v in sorted(results.items())}, indent=4, sort_keys=True))
+
     with open(args.result_filepath, 'w') as outfile:
         json.dump(results, outfile)
 
