@@ -21,7 +21,7 @@ cd /homeappl/home/mikahama/disambiguation-evaluation
 source venv/bin/activate
 for i in {1..10}
 do
-   python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED --model_filepath "models/TRAIN-TEST-SEED_$i" --result_filepath "results/TRAIN-TEST-SEED_$i"
+   python test_rnn_script.py --train_lang TRAIN --test_lang TEST --seed SEED --model_filepath "models/TRAIN-TEST-SEED_$i" --result_filepath "results/TRAIN-TEST-SEED_$i.json"
 done
 
 used_slurm_resources.bash

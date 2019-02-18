@@ -5,7 +5,7 @@ lang = ["kpv", "sme", "fin","est","myv"]
 langs = list(itertools.product(lang, lang))
 langs += list(zip([x for x in langs if x[0] != x[1]], [(x[1],) for x in langs if x[0] != x[1]]))
 
-seed = 1234
+seed = 4568
 
 template = open("slurm_template.sh", "r").read()
 for train_lang, test_lang in langs:

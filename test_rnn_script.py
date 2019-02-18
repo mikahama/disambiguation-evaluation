@@ -323,7 +323,7 @@ if __name__ == "__main__":
             self.maxlen = maxlen
             self.batch_size = batch_size
             self.x, self.y, _ = make_comparison_dataset(
-                self.raw_data, self.maxlen, n=30*self.batch_size, binsize=args.binsize, maxbin=maxbin)
+                self.raw_data, self.maxlen, n=30*self.batch_size, binsize=args.binsize, maxbin=args.maxbin)
 
         def __len__(self):
             return int(np.ceil(len(self.y) / float(self.batch_size)))
@@ -335,7 +335,7 @@ if __name__ == "__main__":
 
         def on_epoch_end(self):
             self.x, self.y, _ = make_comparison_dataset(
-                self.raw_data, self.maxlen, n=30*self.batch_size, binsize=args.binsize, maxbin=maxbin)
+                self.raw_data, self.maxlen, n=30*self.batch_size, binsize=args.binsize, maxbin=args.maxbin)
             self.epoch += 1
 
     if not os.path.exists(args.model_filepath):
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
         callbacks = [EarlyStopping(monitor='val_acc', min_delta=0, patience=5, verbose=1, mode='auto', restore_best_weights=True)]
 
-        valid_inputs,valid_outputs,_ = make_comparison_dataset(valid_d, args.maxlen, n=100, binsize=args.binsize, maxbin=maxbin)
+        valid_inputs,valid_outputs,_ = make_comparison_dataset(valid_d, args.maxlen, n=100, binsize=args.binsize, maxbin=args.maxbin)
         data_generator = DataGenerator(
             train_d, batch_size=args.batch_size, maxlen=args.maxlen)
         model.fit_generator(data_generator, epochs=args.num_epochs, validation_data=(valid_inputs, valid_outputs), callbacks=callbacks)
@@ -377,7 +377,7 @@ if __name__ == "__main__":
 
     results = {}
     test_inputs, test_outputs, test_ids = make_comparison_dataset(
-        test_d, args.maxlen, n=10000, n_readings=10, binsize=args.binsize, maxbin=maxbin)
+        test_d, args.maxlen, n=10000, n_readings=10, binsize=args.binsize, maxbin=args.maxbin)
 
     preds = model.predict(test_inputs).flatten()
     for target, pred, ids in zip(test_outputs, preds, test_ids):

@@ -4,3 +4,4 @@
 uralicNLP
 tmp_*
 results/tmp/*.txt
+slurm-*.out
