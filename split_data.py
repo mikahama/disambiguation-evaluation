@@ -63,14 +63,20 @@ def get_random_labels(n, split):
 
 if __name__ == "__main__":
 
+    import argparse
+    arg_parser = argparse.ArgumentParser(description='Split Data')
+    arg_parser.add_argument('--seed', type=int, required=True)
+    args = arg_parser.parse_args()
+    np.random.seed(args.seed)
+
     langs = ["kpv", "myv", "sme", "est", "fin"]
 
     for lang in langs:
         d = create_dataset(lang, force=0)
         ridx, vidx, tidx = get_random_labels(len(d["target"]), (.8,.1,.1))
-        d.get_subset(ridx).save("DATASET_SPLIT_TRAIN_{}.npz".format(lang))
-        d.get_subset(tidx).save("DATASET_SPLIT_TEST_{}.npz".format(lang))
-        d.get_subset(vidx).save("DATASET_SPLIT_VALID_{}.npz".format(lang))
+        d.get_subset(ridx).save("DATASET_SPLIT_TRAIN_{}_{}.npz".format(lang,args.seed))
+        d.get_subset(tidx).save("DATASET_SPLIT_TEST_{}_{}.npz".format(lang,args.seed))
+        d.get_subset(vidx).save("DATASET_SPLIT_VALID_{}_{}.npz".format(lang,args.seed))
 
 
 #

@@ -245,7 +245,7 @@ if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description='Run tests')
     arg_parser.add_argument('--train_lang',type=str, nargs='+', default=["sme"])
     arg_parser.add_argument('--test_lang', type=str, nargs='+', default=["sme"])
-    arg_parser.add_argument('--seed', type=int, default=1234)
+    arg_parser.add_argument('--seed', type=int, required=True)
     arg_parser.add_argument('--force', type=int, default=0)
     arg_parser.add_argument('--num_epochs', type=int, default=50)
     arg_parser.add_argument('--maxlen', type=int, default=200)
@@ -262,11 +262,13 @@ if __name__ == "__main__":
     train_d = Dataset(keys=["target", "readings"])
     valid_d = Dataset(keys=["target", "readings"])
     for lang in args.train_lang:
-        train_d += Dataset(filepath="DATASET_SPLIT_TRAIN_{}.npz".format(lang))
-        valid_d += Dataset(filepath="DATASET_SPLIT_VALID_{}.npz".format(lang))
+        train_d += Dataset(
+            filepath="DATASET_SPLIT_TRAIN_{}_{}.npz".format(lang, args.seed))
+        valid_d += Dataset(
+            filepath="DATASET_SPLIT_VALID_{}_{}.npz".format(lang, args.seed))
 
     test_d = Dataset(
-        filepath="DATASET_SPLIT_TEST_{}.npz".format(args.test_lang[0]))
+        filepath="DATASET_SPLIT_TEST_{}.npz".format(args.test_lang[0], args.seed))
 
     print "TRAIN DATASET SIZE ({})".format(len(train_d["target"]))
     print "VALID DATASET SIZE ({})".format(len(valid_d["target"]))
