@@ -19,7 +19,7 @@ import json
 mappings = json.load(open("fi_mappings.json", "r"))
 poses = ["N", "A", "V", "Adv", "CC", "CS", "Pron", "Pr", "Po", "Num", "Interj", "Punct", "Det", "Pcle"]
 
-master_keys = ["POS"] + mappings.keys()
+master_keys = ["POS"] + list(mappings.keys())
 master_keys.sort()
 
 def run_spmf(algorithm, input_file, output_file, min_sup=50, spmf_path="spmf.jar"):

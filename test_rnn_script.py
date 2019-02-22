@@ -7,6 +7,9 @@ new tests
 ('est', 23564)
 """
 
+#import choix
+import json
+import functools
 import itertools
 import numpy as np
 np.warnings.filterwarnings('ignore')
@@ -187,7 +190,7 @@ def make_comparison_dataset(d, maxlen, n=1000, n_readings=10, binsize=10, maxbin
     import random
 
     def to_vector(x):
-        flatx = reduce(operator.add, [sorted(list(xx))+[223] for xx in x])
+        flatx = functools.reduce(operator.add, [sorted(list(xx))+[223] for xx in x])
         return pad_sequences([flatx],maxlen=maxlen)[0]
 
     def random_reading(readings):
@@ -221,6 +224,26 @@ def make_comparison_dataset(d, maxlen, n=1000, n_readings=10, binsize=10, maxbin
         ids.append((a,b))
     inputs = [np.array(inputs_a), np.array(inputs_b)]
     return inputs, np.array(outputs), np.array(ids)
+
+def make_rank_dataset(d, maxlen, n_readings=10):
+
+    def to_vector(x):
+        flatx = functools.reduce(operator.add, [sorted(list(xx))+[223] for xx in x])
+        return pad_sequences([flatx],maxlen=maxlen)[0]
+
+    def random_reading(readings):
+        reading, diff = zip(*[random.choice(list(w.items())) for w in readings])
+        return to_vector(reading), int(np.sum(list(diff)))
+
+    inputs = []
+    for sentence, readings in zip(d["target"], d["readings"]):
+
+        input = [to_vector(sentence)]
+        for i in range(n_readings):
+            reading, _ = random_reading(readings)
+            input.append(reading)
+        inputs.append(input)
+    return inputs
 
 if __name__ == "__main__":
 
@@ -268,11 +291,11 @@ if __name__ == "__main__":
             filepath="DATASET_SPLIT_VALID_{}_{}.npz".format(lang, args.seed))
 
     test_d = Dataset(
-        filepath="DATASET_SPLIT_TEST_{}.npz".format(args.test_lang[0], args.seed))
+        filepath="DATASET_SPLIT_TEST_{}_{}.npz".format(args.test_lang[0], args.seed))
 
-    print "TRAIN DATASET SIZE ({})".format(len(train_d["target"]))
-    print "VALID DATASET SIZE ({})".format(len(valid_d["target"]))
-    print "TEST DATASET SIZE ({})".format(len(test_d["target"]))
+    print( "TRAIN DATASET SIZE ({})".format(len(train_d["target"])) )
+    print( "VALID DATASET SIZE ({})".format(len(valid_d["target"])) )
+    print( "TEST DATASET SIZE ({})".format(len(test_d["target"])) )
 
     # OLD MODEL
     """
@@ -378,6 +401,34 @@ if __name__ == "__main__":
         model = load_model(args.model_filepath)
 
     results = {}
+
+    # how high is the target ranked from a collection of n
+    test_inputs = make_rank_dataset(
+        test_d, args.maxlen, n_readings=10)
+
+    def to_pairwise(x):
+        pairwise = []
+        for (i,j),v in x.items():
+            for _ in range(v):
+                pairwise.append([i,j])
+            for _ in range(100 - v):
+                pairwise.append([j,i])
+        return pairwise
+
+    results["RANK"] = []
+    for input in tqdm(test_inputs):
+        out = {}
+        inputs_a = []
+        inputs_b = []
+        for i,j in itertools.combinations(range(len(input)), 2):
+            inputs_a.append( input[i] )
+            inputs_b.append( input[j] )
+        probs = model.predict([np.array(inputs_a), np.array(inputs_b)])
+        for k,(i,j) in enumerate(itertools.combinations(range(len(input)), 2)):
+            out[repr((i,j))] = int(probs[k][0] * 1000000)
+        #print(json.dumps(out, indent=4))
+        results["RANK"].append(out)
+
     test_inputs, test_outputs, test_ids = make_comparison_dataset(
         test_d, args.maxlen, n=10000, n_readings=10, binsize=args.binsize, maxbin=args.maxbin)
 
@@ -391,8 +442,7 @@ if __name__ == "__main__":
     print(np.bincount(np.round(preds).astype(np.int32)))
     print(np.bincount(test_outputs))
 
-    import json
-    print(json.dumps({k : np.mean(v) for k,v in sorted(results.items())}, indent=4, sort_keys=True))
+    #print(json.dumps({k : np.mean(v) for k,v in sorted(results.items())}, indent=4, sort_keys=True))
 
     with open(args.result_filepath, 'w') as outfile:
         json.dump(results, outfile)
